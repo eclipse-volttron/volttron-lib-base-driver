@@ -185,7 +185,7 @@ class DriverAgent(BasicAgent):
     def _get_driver_module(self, driver_type, config_dict):
         # Supports both existing 'volttron.driver.interfaces' namespace
         # and optional, custom namespace from the driver configuration
-        module_name = f"volttron.driver.interfaces.{driver_type}"
+        module_name = f"volttron.driver.interfaces.{driver_type}.{driver_type}"
         _log.debug(config_dict)
         if config_dict.get("driver_module") is not None:
             module_name = config_dict.get("driver_module")

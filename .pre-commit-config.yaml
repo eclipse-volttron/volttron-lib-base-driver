@@ -16,27 +16,13 @@ repos:
   - id: no-commit-to-branch  # blocks main commits.  To bypass do git commit --allow-empty
   - id: pretty-format-json
 
-# For more information about isort, see https://pycqa.github.io/isort/docs/configuration/pre-commit.html
-- repo: https://github.com/pycqa/isort
-  rev: 5.10.1
-  hooks:
-  - id: isort
-    name: isort (python)
-
 # For more information about mypy, see https://github.com/pre-commit/mirrors-mypy
 - repo: https://github.com/pre-commit/mirrors-mypy
   rev: v0.910-1
   hooks:
   - id: mypy
     exclude: ^(docs/|example-plugin/|tests/fixtures|tests/conftest.py)
-    files: ^volttron-driver
 
-- repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v0.910-1
-  hooks:
-  - id: mypy
-    exclude: ^(docs/|example-plugin/|tests/fixtures|tests/conftest.py)
-    files: ^volttron-platform-driver
 
 - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
   rev: v2.2.0
@@ -46,6 +32,23 @@ repos:
   - id: pretty-format-yaml
     args: [--autofix]
     exclude: .copier-answer.yml
+
+# For more information about check-poetry, https://gitlab.com/smop/pre-commit-hooks/-/blob/master/.pre-commit-hooks.yaml
+- repo: local
+  hooks:
+  - id: check-poetry
+    name: Poetry check
+    description: Validates the structure of the pyproject.toml file
+    entry: poetry check
+    language: system
+    pass_filenames: false
+    files: pyproject.toml
+
+- repo: https://github.com/pycqa/isort
+  rev: 5.6.4
+  hooks:
+  - id: isort
+    args: [--profile, black, --filter-files]
 
 # For more information about YAPF, see https://github.com/google/yapf
 - repo: https://github.com/craig8/mirrors-yapf
@@ -58,18 +61,12 @@ repos:
     language: python
     types: [python]
 
-# - repo: https://github.com/python-poetry/poetry
-#   rev: 1.2.0b1
-#   hooks:
-#     - id: poetry-check
-#     - id: poetry-lock
 
-# - repo: local
-#   hooks:
-#   - id: pytest
-#     name: Check pytest unit tests pass
-#     entry: pytest
-#     pass_filenames: false
-#     language: system
-#     types: [python]
-    # files: ^volttron-platform-driver/
+- repo: local
+  hooks:
+  - id: pytest
+    name: Run tests
+    entry: poetry run pytest
+    pass_filenames: false
+    language: system
+    types: [python]
