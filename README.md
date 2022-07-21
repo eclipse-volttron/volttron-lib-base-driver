@@ -1,6 +1,6 @@
 # volttron-lib-base-driver
 
-[![ci](https://github.com/VOLTTRON/volttron-lib-base-driver/workflows/ci/badge.svg)](https://github.com/VOLTTRON/volttron-lib-base-driver/actions?query=workflow%3Aci)
+[![Passing?](https://github.com/VOLTTRON/volttron-lib-base-driver/workflows/run-tests.yml/badge.svg)](https://github.com/VOLTTRON/volttron-lib-base-driver/actions/workflows/run_tests.yml?query=workflow%3A)
 [![documentation](https://img.shields.io/badge/docs-mkdocs%20material-blue.svg?style=flat)](https://VOLTTRON.github.io/volttron-lib-base-driver/)
 [![pypi version](https://img.shields.io/pypi/v/volttron-lib-ted-meter-driver.svg)](https://pypi.org/project/volttron-lib-base-driver/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
