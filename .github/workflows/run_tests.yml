@@ -1,21 +1,13 @@
 name: Run tests
 
+
 on:
   push:
-    branches:
-    - main
-    - develop
-    - releases/**
-    paths:
-    - '**.py'
-    - '**.yml'
+    branches: [main, develop, releases]
+    paths: ['**.py', '**.yml']
   pull_request:
-    types:
-    - opened
-    - synchronize
-    - reopened
-    paths:
-    - '**.py'
+    types: [opened, synchronize, reopened]
+    paths: ['**.py']
 
 defaults:
   run:
@@ -66,4 +58,5 @@ jobs:
     - name: Install library and run tests
       run: |
         poetry install --no-interaction
-        poetry run pytest --cov=src tests/
+        poetry add --group dev pytest-github-actions-annotate-failures
+        poetry run pytest --exitfirst --verbose --failed-first --cov=src tests/
