@@ -60,13 +60,3 @@ repos:
     entry: yapf
     language: python
     types: [python]
-
-
-- repo: local
-  hooks:
-  - id: pytest
-    name: Run tests
-    entry: poetry run pytest
-    pass_filenames: false
-    language: system
-    types: [python]

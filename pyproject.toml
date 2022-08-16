@@ -1,5 +1,5 @@
 [build-system]
-requires = ["poetry-core>=1.1.0a6"]
+requires = ["poetry-core>=1.2.0b2"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.isort]
@@ -12,8 +12,8 @@ description = "Volttron Driver libraries used to support development within the 
 authors = ["Mark Bonicillo <volttron@pnnl.gov>"]
 license = "Apache License 2.0"
 readme = "README.md"
-repository = "https://github.com/VOLTTRON/volttron-lib-base-driver"
-homepage = "https://github.com/VOLTTRON/volttron-lib-base-driver"
+repository = "https://github.com/eclipse-volttron/volttron-lib-base-driver"
+homepage = "https://github.com/eclipse-volttron/volttron-lib-base-driver"
 keywords = []
 packages = [ { include = "volttron", from = "src" } ]
 classifiers = [
