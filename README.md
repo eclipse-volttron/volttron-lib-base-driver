@@ -1,7 +1,6 @@
 # volttron-lib-base-driver
 
 ![Passing?](https://github.com/eclipse-volttron/volttron-lib-base-driver/actions/workflows/run_tests.yml/badge.svg)
-[![documentation](https://img.shields.io/badge/docs-mkdocs%20material-blue.svg?style=flat)](https://eclipse-volttron.github.io/volttron-lib-base-driver/)
 [![pypi version](https://img.shields.io/pypi/v/volttron-lib-base-driver.svg)](https://pypi.org/project/volttron-lib-base-driver/)
 
 
