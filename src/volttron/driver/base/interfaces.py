@@ -651,7 +651,9 @@ class BasicRevert(object, metaclass=abc.ABCMeta):
         """
 
     def revert_all(self, **kwargs):
-        """
+        r"""
+        Revert entire device to its default state
+
         Implementation of :py:meth:`BaseInterface.revert_all`
 
         Calls :py:meth:`BasicRevert._set_point` with `point_name`
@@ -660,7 +662,6 @@ class BasicRevert(object, metaclass=abc.ABCMeta):
 
         Currently \*\*kwargs is ignored.
         """
-        """Revert entire device to it's default state"""
         points = self._tracker.get_all_revert_values()
         for point_name, value in points.items():
             if not isinstance(value, DriverInterfaceError):
@@ -671,7 +672,7 @@ class BasicRevert(object, metaclass=abc.ABCMeta):
                     _log.warning("Error while reverting point {}: {}".format(point_name, str(e)))
 
     def revert_point(self, point_name, **kwargs):
-        """
+        r"""
         Implementation of :py:meth:`BaseInterface.revert_point`
 
         Revert point to its default state.

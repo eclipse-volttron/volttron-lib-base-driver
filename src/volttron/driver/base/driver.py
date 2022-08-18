@@ -42,6 +42,7 @@ import inspect
 import logging
 import random
 import traceback
+from typing import cast
 
 import gevent
 from volttron.client.messaging import headers as headers_mod
@@ -53,9 +54,17 @@ from volttron.client.messaging.topics import (
 )
 from volttron.client.vip.agent import BasicAgent, Core
 from volttron.client.vip.agent.errors import Again, VIPError
-from volttron.utils import format_timestamp, get_aware_utc_now, setup_logging
+from volttron.utils import (
+    format_timestamp,
+    get_aware_utc_now,
+    get_class,
+    get_module,
+    get_subclasses,
+    setup_logging,
+)
 
-from .driver_locks import publish_lock
+from volttron.driver.base.driver_locks import publish_lock
+from volttron.driver.base.interfaces import BaseInterface
 
 setup_logging()
 _log = logging.getLogger(__name__)
@@ -162,65 +171,39 @@ class DriverAgent(BasicAgent):
         from_midnight = datetime.timedelta(seconds=next_in_seconds)
         return midnight + from_midnight + datetime.timedelta(seconds=self.time_slot_offset)
 
-    def get_interface(self, driver_type, config_dict, config_string):
-        """Returns an instance of the interface"""
-        try:
-            module = self._get_driver_module(driver_type, config_dict)
-            klass_base_interface = self._get_base_interface()
-            klass = self._get_driver_class(module, klass_base_interface)
+    def get_interface(self, driver_type: str, driver_config: dict,
+                      registry_config: list) -> BaseInterface:
+        """Returns an instance of the interface
 
-            if klass is None:
-                _log.exception(
-                    f"Driver class not found; No subclass of BaseInterface is found in this module: {module}"
-                )
-                return
+        :param driver_type: The name of the driver
+        :type driver_type: str
+        :param driver_config: The configuration of the driver
+        :type driver_config: dict
+        :param registry_config: A list of registry points reprsented as dictionaries
+        :type registry_config: list
 
-            # Instantiate the driver class with the given configurations
-            interface = klass(vip=self.vip, core=self.core, device_path=self.device_path)
-            interface.configure(config_dict, config_string)
-            return interface
-        except:
-            _log.exception("Forgot to pip install volttron-lib-driver.")
+        :return: Returns an instance of a Driver that is a subclass of BaseInterface
+        :rtype: BaseInterface
 
-    def _get_driver_module(self, driver_type, config_dict):
-        # Supports both existing 'volttron.driver.interfaces' namespace
-        # and optional, custom namespace from the driver configuration
-        module_name = f"volttron.driver.interfaces.{driver_type}.{driver_type}"
-        _log.debug(config_dict)
-        if config_dict.get("driver_module") is not None:
-            module_name = config_dict.get("driver_module")
+        :raises ValueError: Raises ValueError if no subclasses are found.
+        """
+        module = self.get_driver_module(driver_config, driver_type)
+        base_interface_class = get_class('volttron.driver.base.interfaces', 'BaseInterface')
+        subclasses = get_subclasses(module, base_interface_class)
 
-        _log.debug(f"Driver Module namespace: {module_name}")
+        klass = subclasses[0]
+        _log.debug(f"Instantiating driver: {klass}")
+        interface = klass(vip=self.vip, core=self.core, device_path=self.device_path)
 
-        module = importlib.import_module(module_name)
-        _log.debug(f"Driver module: {module}")
+        _log.debug(f"Configuring driver with this configuration: {driver_config}")
+        interface.configure(driver_config, registry_config)
 
-        return module
+        return cast(BaseInterface, interface)
 
-    def _get_base_interface(self):
-        try:
-            module_base = importlib.import_module('volttron.driver.base.interfaces')
-        except ModuleNotFoundError as e:
-            _log.debug(f"Volttron-lib-driver was not installed. Cannot find Driver modules: {e}")
-            raise e
-
-        klass_base_interface = getattr(module_base, 'BaseInterface')
-
-        _log.debug(f"Base interface: {klass_base_interface}")
-
-        return klass_base_interface
-
-    def _get_driver_class(self, module, klass_base_interface):
-        # gets and returns the first class in 'module' that is a subclass of the Driver Interface
-        klasses = inspect.getmembers(module, inspect.isclass)
-        klass = None
-        for c in klasses:
-            _log.info(
-                f"Checking if the following class is a subclass of the driver interface: {c}")
-            if klass_base_interface in c[1].__bases__:
-                klass = c[1]
-                break
-        return klass
+    def get_driver_module(self, driver_config, driver_type):
+        if driver_config.get("driver_module") is not None:
+            return get_module(driver_config.get("driver_module"))
+        return get_module(f"volttron.driver.interfaces.{driver_type}.{driver_type}")
 
     @Core.receiver('onstart')
     def starting(self, sender, **kwargs):
@@ -245,7 +228,12 @@ class DriverAgent(BasicAgent):
 
         self.heart_beat_point = config.get("heart_beat_point")
 
-        self.interface = self.get_interface(driver_type, driver_config, registry_config)
+        try:
+            self.interface = self.get_interface(driver_type, driver_config, registry_config)
+        except ValueError as e:
+            _log.error(f"Failed to setup device: {e}")
+            raise e
+
         self.meta_data = {}
 
         for point in self.interface.get_register_names():
