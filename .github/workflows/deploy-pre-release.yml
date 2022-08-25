@@ -19,6 +19,7 @@ env:
 jobs:
 
   bump_version:
+    if: github.github.repository == 'eclipse-volttron/volttron-lib-base-driver'
     environment: test_env
     runs-on: ubuntu-20.04
     steps:
