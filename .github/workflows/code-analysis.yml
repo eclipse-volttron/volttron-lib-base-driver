@@ -19,6 +19,11 @@ on:
     branches: [main, develop, releases]
   schedule:
   - cron: 34 10 * * 4
+  workflow_dispatch:
+    inputs:
+      triggeredBy:
+        description: Name of team member who is manually triggering this workflow
+        required: true
 
 jobs:
   analyze:

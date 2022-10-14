@@ -14,14 +14,12 @@ env:
   LC_ALL: en_US.utf-8
   PYTHON_VERSION: '3.8'
   PROJECT_NAME: test-release-actions
-  RUNS_ON: ubuntu-20.04
-  DEPLOY_REPOSITORY: eclipse-volttron/volttron-lib-base-driver
+  POETRY_VERSION: 1.2.2
 
 jobs:
 
   bump_version:
-    environment: test_env
-    runs-on: ${{ env.RUNS_ON }}
+    runs-on: ubuntu-20.04
     steps:
     - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
     - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
@@ -37,7 +35,7 @@ jobs:
 
     - name: Set up Python ${{ env.PYTHON_VERSION }}
       id: setup-python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ env.PYTHON_VERSION }}
 
@@ -47,7 +45,7 @@ jobs:
     - name: Install Poetry
       uses: snok/install-poetry@v1
       with:
-        version: 1.2.0b2
+        version: ${{ env.POETRY_VERSION }}
         virtualenvs-create: true
         virtualenvs-in-project: true
         installer-parallel: true
@@ -57,7 +55,7 @@ jobs:
     #----------------------------------------------
     - name: Load cached venv
       id: cached-poetry-dependencies
-      uses: actions/cache@v2.1.7
+      uses: actions/cache@v3
       with:
         path: .venv
         key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
@@ -119,7 +117,7 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Publish pre-release to pypi
-      if: github.repository == ${{ env.DEPLOY_REPOSITORY }}
+      if: github.repository == eclipse-volttron/volttron-lib-base-driver
       run: |
         poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
         poetry publish
