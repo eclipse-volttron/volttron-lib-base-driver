@@ -3,7 +3,6 @@ name: Run tests
 
 on:
   push:
-    branches: [main, develop, releases]
     paths: ['**.py', '**.yml']
   pull_request:
     types: [opened, synchronize, reopened]
