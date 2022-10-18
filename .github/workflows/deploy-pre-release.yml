@@ -117,7 +117,7 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Publish pre-release to pypi
-      if: github.repository == eclipse-volttron/volttron-lib-base-driver
+      if: github.repository == 'eclipse-volttron/volttron-lib-base-driver'
       run: |
         poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
         poetry publish
