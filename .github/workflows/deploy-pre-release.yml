@@ -85,7 +85,7 @@ jobs:
           # uses -V which is version sort to keep it monotonically increasing.
           current_tag=$(git tag -l "v*" | sort --reverse -V |sed -n 1p)
         else
-          current_tag=v10.0.0
+          current_tag=v0.1.0
         fi
 
         current_tag=${current_tag#?}
