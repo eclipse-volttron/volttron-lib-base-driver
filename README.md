@@ -1,6 +1,6 @@
 # volttron-lib-base-driver
 
-![Passing?](https://github.com/eclipse-volttron/volttron-lib-base-driver/actions/workflows/run_tests.yml/badge.svg)
+![Passing?](https://github.com/eclipse-volttron/volttron-lib-base-driver/actions/workflows/run-tests.yml/badge.svg)
 [![pypi version](https://img.shields.io/pypi/v/volttron-lib-base-driver.svg)](https://pypi.org/project/volttron-lib-base-driver/)
 
 
@@ -11,7 +11,7 @@
 
 ### Python
 
-DriverAgent requires Python 3.8 or above.
+Volttron Base Driver requires Python 3.8 or above.
 
 
 To install Python 3.8, we recommend using [pyenv](https://github.com/pyenv/pyenv).
@@ -41,6 +41,10 @@ follow these [instructions](https://python-poetry.org/docs/master/#installation)
 
 ## Installation and Virtual Environment Setup
 
+Set the environment to be in your project directory:
+
+```poetry config virtualenvs.in-project true```
+
 If you want to install all your dependencies, including dependencies to help with developing your agent, run this command:
 
 ```poetry install```
@@ -49,9 +53,10 @@ If you want to install only the dependencies needed to run your agent, run this 
 
 ```poetry install --no-dev```
 
-Set the environment to be in your project directory:
-
-```poetry config virtualenvs.in-project true```
+To view all the installed dependencies in your virtual environment, run this command:
+```shell
+poetry show
+```
 
 Activate the virtual environment:
 
