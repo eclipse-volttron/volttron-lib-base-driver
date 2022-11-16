@@ -6,7 +6,7 @@ on:
     paths: ['**.py', '**.yml']
   pull_request:
     types: [opened, synchronize, reopened]
-    paths: ['**.py']
+    paths: ['**.py',  '**.toml', '**.yml', '**.yaml']
   workflow_dispatch:
     inputs:
       triggeredBy:
