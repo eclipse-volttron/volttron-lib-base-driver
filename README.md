@@ -67,26 +67,6 @@ Please see the following for contributing guidelines [contributing](https://gith
 Please see the following helpful guide about [developing modular VOLTTRON agents](https://github.com/eclipse-volttron/volttron-core/blob/develop/DEVELOPING_ON_MODULAR.md)
 
 
-# Documentation
-
-To build the docs, navigate to the 'docs' directory and build the documentation:
-
-```shell
-cd docs
-make html
-```
-
-After the documentation is built, view the documentation in html form in your browser.
-The html files will be located in `~/<path to agent project directory>/docs/build/html`.
-
-ℹ️ **PROTIP: To open the landing page of your documentation directly from the command line, run the following command:**
-
-```shell
-open <path to agent project directory>/docs/build/html/index.html
-```
-
-This will open the documentation landing page in your default browsert (e.g. Chrome, Firefox).
-
 # Disclaimer Notice
 
 This material was prepared as an account of work sponsored by an agency of the
