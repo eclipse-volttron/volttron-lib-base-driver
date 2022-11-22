@@ -52,7 +52,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = ">=3.8,<4.0"
-volttron = "^10.0.1a31"
+volttron = ">=10.0.1a43,<11.0"
 volttron-testing = "^0.3.1a8"
 
 [tool.poetry.group.dev.dependencies]
