@@ -4,17 +4,14 @@
 [![pypi version](https://img.shields.io/pypi/v/volttron-lib-base-driver.svg)](https://pypi.org/project/volttron-lib-base-driver/)
 
 
-## Prerequisites
+# Prerequisites
 
 * Python 3.8
-* Poetry
 
-### Python
+## Python
 
-Volttron Base Driver requires Python 3.8 or above.
-
-
-To install Python 3.8, we recommend using [pyenv](https://github.com/pyenv/pyenv).
+<details>
+<summary>To install Python 3.8, we recommend using <a href="https://github.com/pyenv/pyenv"><code>pyenv</code></a>.</summary>
 
 ```bash
 # install pyenv
@@ -31,103 +28,59 @@ pyenv install 3.8.10
 # make it available globally
 pyenv global system 3.8.10
 ```
+</details>
 
-### Poetry
+# Installation
 
-This project uses `poetry` to install and manage dependencies. To install poetry,
-follow these [instructions](https://python-poetry.org/docs/master/#installation).
+Create and activate a virtual environment.
 
-
-
-## Installation and Virtual Environment Setup
-
-Set the environment to be in your project directory:
-
-```poetry config virtualenvs.in-project true```
-
-If you want to install all your dependencies, including dependencies to help with developing your agent, run this command:
-
-```poetry install```
-
-If you want to install only the dependencies needed to run your agent, run this command:
-
-```poetry install --no-dev```
-
-To view all the installed dependencies in your virtual environment, run this command:
 ```shell
-poetry show
+python -m venv env
+source env/bin/activate
 ```
 
-Activate the virtual environment:
+Install volttron and start the platform.
 
-```poetry shell```
+```shell
+pip install volttron
 
-
-## Git Setup
-
-1. To use git to manage version control, create a new git repository in your local agent project.
-
-```
-git init
+# Start platform with output going to volttron.log
+volttron -vv -l volttron.log &
 ```
 
-2. Then create a new repo in your Github or Gitlab account. Copy the URL that points to that new repo in
-your Github or Gitlab account. This will be known as our 'remote'.
+Install the library. You have two options. You can install this library using the version on PyPi:
 
-3. Add the remote (i.e. the new repo URL from your Github or Gitlab account) to your local repository. Run the following command:
+```shell
+pip install volttron-lib-base-driver
+```
 
-```git remote add origin <my github/gitlab URL>```
+Or you can install the local version of this library from this repo:
 
-When you push to your repo, note that the default branch is called 'main'.
-
-
-## Optional Configurations
-
-## Precommit
-
-Install pre-commit hooks:
-
-```pre-commit install```
-
-To run pre-commit on all your files, run this command:
-
-```pre-commit run --all-files```
-
-If you have precommit installed and you want to ignore running the commit hooks
-every time you run a commit, include the `--no-verify` flag in your commit. The following
-is an example:
-
-```git commit -m "Some message" --no-verify```
+```shell
+pip install -e .
+```
 
 # Development
 
-If you want to use a local version of [volttron-core](https://github.com/VOLTTRON/volttron-core) instead of installing it from PyPi, modify the '[tool.poetry.dependencies]' section
-of pyproject.toml to use a local version. To do this, you can run the following command:
+Please see the following for contributing guidelines [contributing](https://github.com/eclipse-volttron/volttron-core/blob/develop/CONTRIBUTING.md).
 
-```
-# form of the command
-# poetry add <path to my local version of volttron-core> --editable
+Please see the following helpful guide about [developing modular VOLTTRON agents](https://github.com/eclipse-volttron/volttron-core/blob/develop/DEVELOPING_ON_MODULAR.md)
 
-# example; note that the 'volttron-core' is located one directory up from the current directory
-poetry add ../volttron-core/ --editable
-```
 
-# Documentation
+# Disclaimer Notice
 
-To build the docs, navigate to the 'docs' directory and build the documentation:
+This material was prepared as an account of work sponsored by an agency of the
+United States Government.  Neither the United States Government nor the United
+States Department of Energy, nor Battelle, nor any of their employees, nor any
+jurisdiction or organization that has cooperated in the development of these
+materials, makes any warranty, express or implied, or assumes any legal
+liability or responsibility for the accuracy, completeness, or usefulness or any
+information, apparatus, product, software, or process disclosed, or represents
+that its use would not infringe privately owned rights.
 
-```shell
-cd docs
-make html
-```
-
-After the documentation is built, view the documentation in html form in your browser.
-The html files will be located in `~/<path to agent project directory>/docs/build/html`.
-
-**PROTIP: To open the landing page of your documentation directly from the command line, run the following command:**
-
-```shell
-open <path to agent project directory>/docs/build/html/index.html
-```
-
-This will open the documentation landing page in your default browsert (e.g. Chrome, Firefox).
+Reference herein to any specific commercial product, process, or service by
+trade name, trademark, manufacturer, or otherwise does not necessarily
+constitute or imply its endorsement, recommendation, or favoring by the United
+States Government or any agency thereof, or Battelle Memorial Institute. The
+views and opinions of authors expressed herein do not necessarily state or
+reflect those of the United States Government or any agency thereof.
