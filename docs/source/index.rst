@@ -22,58 +22,72 @@ its interfaces directory (services/core/PlatformDriverAgent/platform_driver/inte
 specified by "driver_type" in the configuration file.  For the CSV Driver, create a file named csvdriver.py in that
 directory.
 
-::
-
-    ├── platform_driver
-    │         ├── agent.py
-    │         ├── driver.py
-    │         ├── __init__.py
-    │         ├── interfaces
-    │         │         ├── __init__.py
-    │         │         ├── bacnet.py
-    |         |         ├── csvdriver.py
-    │         │         └── modbus.py
-    │         └── socket_lock.py
-    ├── platform-driver.agent
-    └── setup.py
-
-Following is an example using the directory type structure:
+New drivers for VOLTTRON are implemented as library packages, and can be installed using poetry or pip. The directory
+structure of the package should follow the pattern shown here:
 
 ::
 
-    ├── platform_driver
-    │         ├── agent.py
-    │         ├── driver.py
-    │         ├── __init__.py
-    │         ├── interfaces
-    │         │         ├── __init__.py
-    │         │         ├── bacnet.py
-    |         |         ├── csvdriver.py
-    │         │         ├── modbus.py
-    │         │         ├── modbus_tk.py
-    │         │         |   ├── __init__.py
-    │         │         |   ├── tests
-    │         │         |   ├── requirements.txt
-    │         │         |   └── README.rst
+    ├── volttron-lib-<driver_name>-driver
+    │   └── docs
+    │   │   └── index.rst
+    │   ├── src
+    │   │   └── volttron
+    │   │       └── driver
+    │   │           └── interfaces
+    │   │               └── <driver_name>
+    │   │                   ├── __init__.py
+    │   │                   └── <driver_name>.py
+    │   │                   └── <suppporting_code>.py
+    │   └── tests
+    │       └── test_<stuff>.py
+    │       └── test_<other_stuff>.py
+    ├── sample_<driver_name>_config.json
+    ├── sample_<driver_name>_registry.csv
+    ├── pyproject.toml
+    ├── LICENSE
+    └── README.md
 
-.. note::
+Note that the following conventions allow VOLTTRON to find and correctly load the driver interface from installed
+python packages when the Platform Driver Agent is started:
 
-    Using this format, the directory must be the name specified by "driver_type" in the configuration file and the
-    `Interface` class must be in the `__init__.py` file in that directory.
+* A pyproject.toml file should be included at the repository root (<top_level>) directory. This should include
+  the ``volttron-lib-base-driver`` package as a dependency.
+* All code for the driver is placed in a file with the actual name of the driver (replacing <driver_name> above) in a
+  directory with the name of the driver.
+* The <driver_name> directory should itself be placed in a <top_level>/src/volttron/driver/interfaces directory. The
+  <top_level> name should follow the pattern "volttron-lib-<driver_name>-driver".
 
-This format is ideal for including additional code files as well as requirements files, tests and documentation.
+.. attention::
+    Notice that only the <driver_name> directory contains an __init__.py file. It is important for the driver to be
+    loaded correctly that higher-level directories **not** contain __init__.py files.
+
+Optionally, but strongly encouraged:
+
+* Documentation for the driver, detailing its use and configuration should be placed in
+  <top_level>/docs/source/index.rst.
+* Unit and integration tests may be included in a tests directory at the repository root (<top_level>) directory.
+* A README.md file should be included with basic information about the package and its installation.
+* A LICENSE file should be included to clearly define the terms under which the code may be used.
+  * Note that VOLTTRON uses the Apache 2 license, and contributors are encouraged to keep their license compatible.
+* Sample device and registry configurations may be placed in the repository root (<top_level>) directory.
 
 
 Interface Basics
 ================
 
-A complete interface consists of two parts: the interface class and one or more register classes.
+A complete interface consists of two parts: the interface class and one or more register classes. These should inherit
+from the  BaseInterface and Base Register classes in the ``volttron-lib-base-driver`` package.  The BasicRevert Mixin
+from the same package will also be useful.
+
+.. code-block:: python
+
+    from volttron.driver.base.interfaces import (BaseInterface, BaseRegister, BasicRevert)
 
 
 Interface Class Skeleton
 ------------------------
 When the Platform Driver processes a driver configuration file it creates an instance of the interface class found in the
-interface file (such as the one we've just created).  The interface class is responsible for managing the communication
+interface file. The interface class is responsible for managing the communication
 between the Volttron Platform, and the device.  Each device has many registers which hold the values Volttron agents are
 interested in so generally the interface manages reading and writing to and from a device's registers.  At a minimum,
 the interface class should be configurable, be able to read and write registers, as well as read all registers with a
