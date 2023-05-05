@@ -16,9 +16,9 @@ of the documentation for this component is located in the "docs" directory of th
 
 # Installation
 
-Before installing the VOLTTRON Modbus driver, VOLTTRON should be installed and running.
-Its virtual environment should be active. Information on how to install
-of the VOLTTRON platform can be found [here](https://github.com/eclipse-volttron/volttron-core).
+Before installing, VOLTTRON should be installed and running.  Its virtual environment should be active.
+Information on how to install of the VOLTTRON platform can be found
+[here](https://github.com/eclipse-volttron/volttron-core).
 
 Install the library. You have two options. You can install this library using the version on PyPi:
 
