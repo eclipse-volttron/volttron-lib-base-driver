@@ -4,49 +4,21 @@
 [![pypi version](https://img.shields.io/pypi/v/volttron-lib-base-driver.svg)](https://pypi.org/project/volttron-lib-base-driver/)
 
 
-# Prerequisites
+# Requires
 
-* Python 3.8
+* python >= 3.10
+* volttron >= 10.0
 
-## Python
 
-<details>
-<summary>To install Python 3.8, we recommend using <a href="https://github.com/pyenv/pyenv"><code>pyenv</code></a>.</summary>
-
-```bash
-# install pyenv
-git clone https://github.com/pyenv/pyenv ~/.pyenv
-
-# setup pyenv (you should also put these three lines in .bashrc or similar)
-export PATH="${HOME}/.pyenv/bin:${PATH}"
-export PYENV_ROOT="${HOME}/.pyenv"
-eval "$(pyenv init -)"
-
-# install Python 3.8
-pyenv install 3.8.10
-
-# make it available globally
-pyenv global system 3.8.10
-```
-</details>
+# Documentation
+More detailed documentation can be found on [ReadTheDocs](https://volttron.readthedocs.io/en/modular/). The RST source
+of the documentation for this component is located in the "docs" directory of this repository.
 
 # Installation
 
-Create and activate a virtual environment.
-
-```shell
-python -m venv env
-source env/bin/activate
-```
-
-Install volttron and start the platform.
-
-```shell
-pip install volttron
-
-# Start platform with output going to volttron.log
-volttron -vv -l volttron.log &
-```
+Before installing the VOLTTRON Modbus driver, VOLTTRON should be installed and running.
+Its virtual environment should be active. Information on how to install
+of the VOLTTRON platform can be found [here](https://github.com/eclipse-volttron/volttron-core).
 
 Install the library. You have two options. You can install this library using the version on PyPi:
 

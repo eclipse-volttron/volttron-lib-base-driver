@@ -4,14 +4,14 @@
 Driver Development
 ==================
 
-In order for VOLTTRON agents to gather data from a device or to set device values, agents send requests to the Master
-Driver Agent to read or set points.  The Platform Driver Agent then sends these requests on to the appropriate driver for
-interfacing with that device based on the topic specified in the request and the configuration of the Platform Driver.
-Drivers provide an interface between the device and the platform driver by implementing portions of the devices' protocols
-needed to serve the functions of setting and reading points.
+In order for VOLTTRON agents to gather data from a device or to set device values, agents send requests to the
+:ref:`Platform Driver Agent <Platform-Driver-Agent>` to read or set points.  The Platform Driver Agent then sends these
+requests on to the appropriate driver for that device based on the topic specified in the request and the configuration
+of the Platform Driver. Drivers provide an interface between the device and the platform driver by implementing portions
+of the devices' protocols needed to serve the functions of setting and reading points.
 
-As a demonstration of developing a driver a driver can be made to read and set points in a CSV file.  This driver will
-only differ from a real device driver in terms of the specifics of the protocol.
+This page demonstrates development of a driver to read and set points in a CSV file.  This resulting driver will only
+differ from a real device driver in terms of the specifics of the protocol.
 
 
 Create a Driver and Register class
@@ -129,7 +129,7 @@ For the CSV driver, create the register class boilerplate:
 This class should inherit from the BaseRegister.  The class should keep register metadata, and depending upon the
 requirements of the protocol/device, may perform the communication.
 
-The BACNet and Modbus drivers may be used as examples of more specific implementations.  For the purpose of this
+The BACnet and Modbus drivers may be used as examples of more specific implementations.  For the purpose of this
 demonstration writing and reading points will be done in the register, however, this may not always be the case (as in
 the case of the BACNet driver).
 
