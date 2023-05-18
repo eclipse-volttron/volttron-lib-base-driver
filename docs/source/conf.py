@@ -26,7 +26,7 @@
 
 # -- Project information
 
-project = 'PlatformDriverAgent'
+project = 'VOLTTRON Base Driver'
 copyright = '2022, Pacific Northwest National Lab'
 author = 'Pacific Northwest National Lab'
 
