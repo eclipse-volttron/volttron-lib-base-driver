@@ -16,7 +16,7 @@
 More detailed documentation can be found on [ReadTheDocs](https://volttron.readthedocs.io/en/modular/). The RST source
 of the documentation for this component is located in the "docs" directory of this repository.
 
-# Installation
+## Installation
 
 Before installing, VOLTTRON should be installed and running.  Its virtual environment should be active.
 Information on how to install of the VOLTTRON platform can be found
@@ -34,14 +34,14 @@ Or you can install the local version of this library from this repo:
 pip install -e .
 ```
 
-# Development
+## Development
 
 Please see the following for contributing guidelines [contributing](https://github.com/eclipse-volttron/volttron-core/blob/develop/CONTRIBUTING.md).
 
 Please see the following helpful guide about [developing modular VOLTTRON agents](https://github.com/eclipse-volttron/volttron-core/blob/develop/DEVELOPING_ON_MODULAR.md)
 
 
-# Disclaimer Notice
+## Disclaimer Notice
 
 This material was prepared as an account of work sponsored by an agency of the
 United States Government.  Neither the United States Government nor the United
