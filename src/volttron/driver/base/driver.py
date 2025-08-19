@@ -74,14 +74,15 @@ class DriverAgent:
         :param registry_config: A list of registry points represented as PointConfigs
         :param base_topic: The portion of the topic shared by all points in this registry.
         """
+        _log.debug(f'IN ADD REGISTERS WITH REGISTRY_CONFIG: {registry_config}')
         for register_config in registry_config:
             register = self.interface.create_register(register_config)
             self.interface.insert_register(register, base_topic)
         # TODO: Finalize method is only used by bacnet, currently, and that pauses 30s on each device if it can't connect.
-        # try:
-        #     self.interface.finalize_setup(initial_setup=True)
-        # except BaseException as e:
-        #     _log.warning(f'Exception occurred while finalizing setup of interface for {self.unique_id}: {e}.')
+        try:
+            self.interface.finalize_setup(initial_setup=True)
+        except BaseException as e:
+            _log.warning(f'Exception occurred while finalizing setup of interface for {self.unique_id}: {e}.')
 
         for point_name in self.interface.get_register_names():
             register = self.interface.get_register_by_name(point_name)
@@ -111,7 +112,9 @@ class DriverAgent:
         if self.scalability_test:  # TODO: Update scalability testing.
             self.scalability_test.poll_starting(self.unique_id)
         try:
+            _log.debug('@@@@@ BEFORE GET_MULTIPLE_POINTS IN POLL_DATA')
             results, errors = self.interface.get_multiple_points(poll_set.points.keys())
+            _log.debug('@@@@@ AFTER GET_MULTIPLE_POINTS IN POLL_DATA')
             for failed_point, failure_message in errors.items():
                 _log.warning(f'Failed to poll {failed_point}: {failure_message}')
             if results:
@@ -173,6 +176,7 @@ class DriverAgent:
         if self.config.heart_beat_point is None:
             return
         self.heart_beat_value = int(not bool(self.heart_beat_value))
+        # TODO: config.heart_beat_point should be a set.
         self.set_point(self.config.heart_beat_point, self.heart_beat_value)
 
     def get_point(self, topic, **kwargs):
@@ -219,6 +223,7 @@ class DriverAgent:
 
     def add_equipment(self, device_node):
         # TODO: Is logic needed for scheduling or any other purpose on adding equipment to this remote?
+        _log.debug(f'IN ADD EQUIPMENT, with device_node: {device_node.identifier}')
         self.add_registers([p.config for p in self.equipment_model.points(device_node.identifier)],
                            device_node.identifier)
         self.equipment.add(device_node)

@@ -379,6 +379,7 @@ class BaseInterface(object, metaclass=abc.ABCMeta):
         """
         Revert point to it's default state.
 
+        :param topic: The topic of the point.
         :param kwargs: Any interface specific parameters.
         """
 
