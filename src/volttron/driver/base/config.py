@@ -24,7 +24,7 @@
 
 from datetime import timedelta
 from enum import Enum
-from pydantic import BaseModel, computed_field, ConfigDict, Field, field_validator
+from pydantic import BaseModel, computed_field, ConfigDict, Field, field_serializer, field_validator
 
 # TODO: Wire up the data_source field to poll scheduling (everything is currently short-poll because this isn't used).
 # TODO: Should NEVER actually be an option? Could it just be None?
@@ -74,6 +74,10 @@ class PointConfig(EquipmentConfig):
         # TODO: Data Source enum needs something to tell Data Point how to serialize it, otherwise enable/disable will fail.
         return v.lower()
 
+    @field_serializer('data_source')
+    def _serialize_data_source(self, data_source):
+        return data_source.value
+
     @computed_field
     @property
     def stale_timeout(self) -> timedelta | None:
@@ -100,5 +104,5 @@ class RemoteConfig(BaseModel):
     model_config = ConfigDict(extra='allow', validate_assignment=True)
     debug: bool = False
     driver_type: str
-    heart_beat_point: str | None = None
+    heart_beat_point: str | None = None  # TODO: This needs to become a set (multiple devices could have multiple points).
     module: str | None = None
