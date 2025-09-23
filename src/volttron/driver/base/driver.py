@@ -26,7 +26,8 @@ import gevent
 import logging
 import traceback
 
-from typing import cast
+from collections import defaultdict
+from typing import Any, cast
 from weakref import WeakSet
 
 
@@ -61,7 +62,7 @@ class DriverAgent:
             # TODO: What happens if we have multiple device nodes on this remote?
             #  Are we losing all settings but the first?
             klass = BaseInterface.get_interface_subclass(self.config.driver_type)
-            interface = klass(self.config, self.core, self.vip)
+            interface = klass(self.config, self)
             self.interface = cast(BaseInterface, interface)
         except ValueError as e:
             _log.error(f"Failed to setup device: {e}")
@@ -122,7 +123,7 @@ class DriverAgent:
                     point = poll_set.points.get(topic)
                     if point and point.active:
                         point.last_value = value
-                self.publish(results, poll_set)
+                self.publish_poll(results, poll_set)
             return True  # TODO: There could really be better logic in the method to measure success.
         except (Exception, gevent.Timeout) as e:
             _log.error(f'Exception while polling {self.unique_id}: {e}')
@@ -136,7 +137,7 @@ class DriverAgent:
                 self.scalability_test.poll_ending(self.unique_id)
 
     # noinspection DuplicatedCode
-    def publish(self, results, poll_set):
+    def publish_poll(self, results, poll_set):
         headers = publication_headers()
         for point_topic in poll_set.single_depth:
             if point_topic in results:
@@ -197,29 +198,35 @@ class DriverAgent:
     def revert_all(self, **kwargs):
         self.interface.revert_all(**kwargs)
 
-    def publish_cov_value(self, point_name, point_values):
-        """
-        Called in the platform driver agent to publish a cov from a point
-        :param point_name: point which sent COV notifications
-        :param point_values: COV point values
-        """
+    def publish_push(self, results):
         et = self.equipment_model
         headers = publication_headers()
-        for point, value in point_values.items(): # TODO: How is point different from point_name?
-            # TODO: Several of these things can be outside loop if the point in the loop isn't important.
-            point_depth_topic, point_breadth_topic = et.get_point_topics(point_name)
-            device_depth_topic, device_breadth_topic = et.get_device_topics(point_name)
-            point_node = self.equipment_model.get_node(point_name)
-            if et.is_published_single_depth(point_name):
+        multi_depth_values, multi_depth_meta, multi_breadth_values, multi_breadth_meta = (
+            defaultdict(dict), defaultdict(dict), defaultdict(dict), defaultdict(dict))
+        for point_topic, value in results.items():
+            point_depth_topic, point_breadth_topic = et.get_point_topics(point_topic)
+            device_depth_topic, device_breadth_topic = et.get_device_topics(point_topic)
+            point_node = self.equipment_model.get_node(point_topic)
+            if et.is_published_single_depth(point_topic):
                 publish_wrapper(self.vip, point_depth_topic, headers, [value, point_node.meta_data])
-            if et.is_published_single_breadth(point_name):
+            if et.is_published_single_breadth(point_topic):
                 publish_wrapper(self.vip, point_breadth_topic, headers, [value, point_node.meta_data])
-            if et.is_published_multi_depth(point_name) or et.is_published_all_depth(point_name):
-                publish_wrapper(self.vip, device_depth_topic, headers,
-                                      [{point_name: value}, {point_name: point_node.meta_data}])
-            if et.is_published_multi_breadth(point_name) or et.is_published_all_breadth(point_name):
-                publish_wrapper(self.vip, device_breadth_topic, headers,
-                                      [{point_name: value}, {point_name: point_node.meta_data}])
+            if et.is_published_multi_depth(point_topic):
+                point_name = point_topic.rsplit('/', 1)[-1]
+                multi_depth_values[device_depth_topic][point_name] = value
+                multi_depth_meta[device_depth_topic][point_name] = point_node.meta_data
+            if et.is_published_multi_breadth(point_topic):
+                point_name = point_topic.rsplit('/', 1)[-1]
+                multi_breadth_values[device_breadth_topic][point_name] = value
+                multi_breadth_meta[device_breadth_topic][point_name] = point_node.meta_data
+        if multi_depth_values:
+            for device_topic in multi_depth_values:
+                publish_wrapper(self.vip, device_topic, headers,
+                                      [multi_depth_values[device_topic], multi_depth_meta[device_topic]])
+        if multi_breadth_values:
+            for device_topic in multi_breadth_values:
+                publish_wrapper(self.vip, device_topic, headers,
+                                [multi_breadth_values[device_topic], multi_breadth_meta[device_topic]])
 
     def add_equipment(self, device_node):
         # TODO: Is logic needed for scheduling or any other purpose on adding equipment to this remote?

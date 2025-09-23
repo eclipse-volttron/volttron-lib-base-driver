@@ -247,14 +247,11 @@ class BaseInterface(object, metaclass=abc.ABCMeta):
     REGISTER_CONFIG_CLASS = PointConfig
     INTERFACE_CONFIG_CLASS = RemoteConfig
 
-    def __init__(self, config: RemoteConfig, core, vip, *args, **kwargs):
+    def __init__(self, config: RemoteConfig, driver_agent, *args, **kwargs):
         # Object does not take any arguments to the init.
         super(BaseInterface, self).__init__()
         self.config = config
-        # TODO: Reevaluate whether vip and core are necessary here. They are currently only used by the bacnet interface.
-        self.core = core
-        self.vip = vip
-
+        self.driver_agent = driver_agent
 
         self.point_map = {}
         self.registers = {
