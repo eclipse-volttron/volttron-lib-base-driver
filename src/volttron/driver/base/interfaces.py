@@ -156,7 +156,6 @@ to set values for each point to revert to.
 import abc
 import logging
 
-from collections.abc import KeysView
 from typing import Iterable
 from weakref import WeakSet
 
@@ -178,7 +177,7 @@ class BaseRegister:
     be supported.
 
     The member variable ``python_type`` should be overridden with the equivalent
-    python type object. Defaults to ``int``. This is used to generate meta data.
+    python type object. Defaults to ``int``. This is used to generate metadata.
 
     :param register_type: Type of the register. Either "bit" or "byte". Usually "byte".
     :param read_only: Specify if the point can be written to.
@@ -194,7 +193,7 @@ class BaseRegister:
 
     The Platform Driver Agent will use :py:meth:`BaseRegister.get_units` to populate metadata for
     publishing. When instantiating register instances be sure to provide a useful
-    string for the units argument.
+    string for the "units" argument.
     """
 
     def __init__(self, register_type, read_only, point_name, units, description=''):
@@ -212,7 +211,7 @@ class BaseRegister:
         """
         return self.python_type
 
-    def get_register_type(self):
+    def get_register_type(self) -> tuple[str, bool]:
         """
         :return: (register_type, read_only)
         :rtype: tuple
@@ -271,13 +270,13 @@ class BaseInterface(object, metaclass=abc.ABCMeta):
             to perform any post-change setup.
             Interfaces should override this method if post-configuration setup is required.
 
-            :param initial_setup True on the first call. False for calls after changes.
+            :param: initial_setup True on the first call. False for calls after changes.
             """
         pass
 
-    def get_register_by_name(self, name: str) -> type[BaseRegister]:
+    def get_register_by_name(self, name: str) -> BaseRegister:
         """
-        Get a register by it's point name.
+        Get a register by its point name.
 
         :param name: Point name of register.
         :type name: str
@@ -369,7 +368,7 @@ class BaseInterface(object, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def revert_all(self, **kwargs):
         """
-        Revert entire device to it's default state
+        Revert entire device to its default state
 
         :param kwargs: Any interface specific parameters.
         """
@@ -377,14 +376,14 @@ class BaseInterface(object, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def revert_point(self, topic, **kwargs):
         """
-        Revert point to it's default state.
+        Revert point to its default state.
 
         :param topic: The topic of the point.
         :param kwargs: Any interface specific parameters.
         """
 
     @abc.abstractmethod
-    def get_multiple_points(self, topics: Iterable[str], **kwargs) -> (dict, dict):
+    def get_multiple_points(self, topics: Iterable[str], **kwargs) -> tuple[dict, dict]:
         """
         Read multiple points from the interface.
 
@@ -597,7 +596,7 @@ class BasicRevert(object, metaclass=abc.ABCMeta):
         self._tracker.mark_dirty_point(topic)
         return result
 
-    def get_multiple_points(self, topics: Iterable[str], **kwargs) -> (dict, dict):
+    def get_multiple_points(self, topics: Iterable[str], **kwargs) -> tuple[dict, dict]:
         """
         Implementation of :py:meth:`BaseInterface.scrape_all`
         """
@@ -612,7 +611,7 @@ class BasicRevert(object, metaclass=abc.ABCMeta):
         Set the current value for the point name given.
 
         If using this mixin you must override this method
-        instead of :py:meth:`BaseInterface.set_point`. Otherwise
+        instead of :py:meth:`BaseInterface.set_point`. Otherwise,
         the purpose is exactly the same.
 
         Implementations of this method should make a reasonable
@@ -624,25 +623,24 @@ class BasicRevert(object, metaclass=abc.ABCMeta):
 
         :param topic: Name of the point to retrieve.
         :param value: Value to set the point to.
-        :param kwargs: Any interface specific parameters.
         :type topic: str
         :return: Actual point value set.
         """
 
     @abc.abstractmethod
-    def _get_multiple_points(self, topics: Iterable[str], **kwargs) -> (dict, dict):
+    def _get_multiple_points(self, topics: Iterable[str], **kwargs) -> tuple[dict, dict]:
         """
         Method the Platform Driver Agent calls to get multiple point values.
 
         If using this mixin you must override this method
-        instead of :py:meth:`BaseInterface.get_multiple_points`. Otherwise
+        instead of :py:meth:`BaseInterface.get_multiple_points`. Otherwise,
         the purpose is exactly the same.
 
         :return: Point names to values for device.
         :rtype: dict, dict
         """
 
-    def revert_all(self, **kwargs):
+    def revert_all(self):
         r"""
         Revert entire device to its default state
 
@@ -651,8 +649,6 @@ class BasicRevert(object, metaclass=abc.ABCMeta):
         Calls :py:meth:`BasicRevert._set_point` with `topic`
         and the value to revert the point to for every writable
         point on a device.
-
-        Currently \*\*kwargs is ignored.
         """
         points = self._tracker.get_all_revert_values()
         for topic, value in points.items():
@@ -663,7 +659,7 @@ class BasicRevert(object, metaclass=abc.ABCMeta):
                 except Exception as e:
                     _log.warning("Error while reverting point {}: {}".format(topic, str(e)))
 
-    def revert_point(self, topic, **kwargs):
+    def revert_point(self, topic):
         r"""
         Implementation of :py:meth:`BaseInterface.revert_point`
 
@@ -674,8 +670,6 @@ class BasicRevert(object, metaclass=abc.ABCMeta):
 
         :param topic: Name of the point to revert.
         :type topic: str
-
-        Currently \*\*kwargs is ignored.
         """
         try:
             value = self._tracker.get_revert_value(topic)

@@ -41,14 +41,14 @@ _log = logging.getLogger(__name__)
 
 
 class DriverAgent:
-    def __init__(self, config: RemoteConfig, core, equipment_model, scalability_test, tz: str, unique_id: any,
+    def __init__(self, config: RemoteConfig, core, equipment_model, scalability_test, tz: str, unique_id: Any,
                  vip: Agent.Subsystems):
         self.config: RemoteConfig = config
         self.core = core
         self.equipment_model = equipment_model  # TODO: This should probably move out of the agent and into the base or a library.
         self.scalability_test = scalability_test  # TODO: If this is used from here, it should probably be in the base driver.
         self.tz: str = tz  # TODO: This won't update here if it is updated in the agent. Can it's use be moved out of here?
-        self.unique_id: any = unique_id
+        self.unique_id: Any = unique_id
         self.vip: Agent.Subsystems = vip
         
         # State Variables
