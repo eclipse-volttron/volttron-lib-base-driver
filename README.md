@@ -1,19 +1,18 @@
 # volttron-lib-base-driver
 
+[![Eclipse VOLTTRON™](https://img.shields.io/badge/Eclips%20VOLTTRON--red.svg)](https://volttron.readthedocs.io/en/latest/)
 ![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)
-![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)
 ![Passing?](https://github.com/eclipse-volttron/volttron-lib-base-driver/actions/workflows/run-tests.yml/badge.svg)
 [![pypi version](https://img.shields.io/pypi/v/volttron-lib-base-driver.svg)](https://pypi.org/project/volttron-lib-base-driver/)
 
 
-# Requires
+## Requirements
 
 * python >= 3.10
-* volttron >= 10.0
-
+* volttron-core >= 2.0.0rc0
 
 # Documentation
-More detailed documentation can be found on [ReadTheDocs](https://volttron.readthedocs.io/en/modular/). The RST source
+More detailed information about the VOLTTRON Driver Framework can be found [ReadTheDocs](https://eclipse-volttron.readthedocs.io/en/latest/external-docs/volttron-platform-driver/index.html#platform-driver-framework). The RST source
 of the documentation for this component is located in the "docs" directory of this repository.
 
 ## Installation
@@ -25,13 +24,7 @@ Information on how to install of the VOLTTRON platform can be found
 Install the library. You have two options. You can install this library using the version on PyPi:
 
 ```shell
-pip install volttron-lib-base-driver
-```
-
-Or you can install the local version of this library from this repo:
-
-```shell
-pip install -e .
+poetry add --directory $VOLTTRON_HOME volttron-lib-base-driver
 ```
 
 ## Development

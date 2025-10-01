@@ -21,13 +21,55 @@
 #
 # ===----------------------------------------------------------------------===
 # }}}
+import logging
+import resource
 
 from contextlib import contextmanager
-
 from gevent.lock import BoundedSemaphore, DummySemaphore
+
+
+_log = logging.getLogger(__name__)
 
 _socket_lock = None
 
+def get_system_socket_limit():
+    # Increase open files resource limit to max or 8192 if unlimited
+    system_socket_limit = None
+    try:
+        soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+    except OSError:
+        _log.exception('error getting open file limits')
+    else:
+        if soft != hard and soft != resource.RLIM_INFINITY:
+            try:
+                system_socket_limit = 8192 if hard == resource.RLIM_INFINITY else hard
+                resource.setrlimit(resource.RLIMIT_NOFILE, (system_socket_limit, hard))
+            except OSError:
+                _log.exception('error setting open file limits')
+            else:
+                _log.debug('open file resource limit increased from %d to %d', soft,
+                           system_socket_limit)
+        if soft == hard:
+            system_socket_limit = soft
+    return system_socket_limit
+
+def setup_socket_lock(max_open_sockets=None):
+    if max_open_sockets is not None:
+        max_connections = int(max_open_sockets)
+        _log.info("maximum concurrently open sockets limited to " + str(max_open_sockets))
+    else:
+        system_socket_limit = get_system_socket_limit()
+        if system_socket_limit is not None:
+            max_connections = int(system_socket_limit * 0.8)
+            _log.info("maximum concurrently open sockets limited to " + str(max_open_sockets)
+                      + " (derived from system limits)")
+        else:
+            max_connections = 0
+            _log.warning(
+                "No limit set on the maximum number of concurrently open sockets. "
+                "Consider setting max_open_sockets if you plan to work with 800+ modbus devices."
+            )
+    configure_socket_lock(max_connections)
 
 def configure_socket_lock(max_connections=0):
     global _socket_lock
@@ -55,6 +97,13 @@ _publish_lock = None
 
 
 def configure_publish_lock(max_connections=0):
+    if max_connections < 1:
+        _log.warning(
+            "No limit set on the maximum number of concurrent driver publishes. "
+            "Consider setting max_concurrent_publishes if you plan to work with many devices."
+        )
+    else:
+        _log.info("maximum concurrent driver publishes limited to " + str(max_connections))
     global _publish_lock
     if _publish_lock is not None:
         raise RuntimeError("socket_lock already configured!")

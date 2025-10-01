@@ -1,5 +1,5 @@
 [build-system]
-requires = ["poetry-core>=1.2.2"]
+requires = ["poetry-core>=2.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.isort]
@@ -32,7 +32,7 @@ ignore_missing_imports = true
 
 [tool.poetry]
 name = "volttron-lib-base-driver"
-version = "0.2.1rc0"
+version = "2.0.0rc0"
 description = "Volttron Driver libraries used to support development within the Volttron Driver Framework."
 authors = ["Mark Bonicillo <volttron@pnnl.gov>"]
 license = "Apache License 2.0"
@@ -51,9 +51,10 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
+pydantic = ">=2.9.2"
+pydantic-core = ">=2.23.4"
 python = ">=3.10,<4.0"
-volttron = ">=10.0.1a43,<11.0"
-
+volttron-core = ">=2.0.0rc0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^6.2.5"
@@ -65,7 +66,6 @@ mypy = "^0.942"
 coverage = "^6.3.2"
 isort = "^5.10.1"
 pytest-cov = "^3.0.0"
-volttron-testing = ">=0.4.0rc0"
 
 [tool.poetry.group.documentation.dependencies]
 Sphinx = "^4.5.0"

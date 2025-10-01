@@ -50,8 +50,8 @@ def test_update_publish_types_should_only_set_depth_first_to_true():
         driver_agent.update_publish_types(publish_depth_first_all, publish_breadth_first_all,
                                           publish_depth_first, publish_breadth_first)
 
-        assert not driver_agent.publish_depth_first_all
-        assert not driver_agent.publish_breadth_first_all
+        assert not driver_agent.publish_all_depth
+        assert not driver_agent.publish_all_breadth
         assert driver_agent.publish_depth_first
         assert not driver_agent.publish_breadth_first
 
@@ -159,8 +159,8 @@ def test_periodic_read_should_succeed():
                            interface_scrape_all={"foo": "bar"}) as driver_agent:
         driver_agent.periodic_read(now)
 
-        driver_agent.parent.scrape_starting.assert_called_once()
-        driver_agent.parent.scrape_ending.assert_called_once()
+        driver_agent.agent.scrape_starting.assert_called_once()
+        driver_agent.agent.scrape_ending.assert_called_once()
         driver_agent._publish_wrapper.assert_called_once()
         assert isinstance(driver_agent.periodic_read_event, ScheduledEvent)
 
@@ -176,8 +176,8 @@ def test_periodic_read_should_return_none_on_scrape_response(scrape_all_response
         result = driver_agent.periodic_read(now)
 
         assert result is None
-        driver_agent.parent.scrape_starting.assert_called_once()
-        driver_agent.parent.scrape_ending.assert_not_called()
+        driver_agent.agent.scrape_starting.assert_called_once()
+        driver_agent.agent.scrape_ending.assert_not_called()
         driver_agent._publish_wrapper.assert_not_called()
         assert isinstance(driver_agent.periodic_read_event, ScheduledEvent)
 

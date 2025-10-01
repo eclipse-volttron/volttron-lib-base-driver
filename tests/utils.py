@@ -113,6 +113,7 @@ def base_driver_agent(has_base_topic: bool = False,
         driver_agent.core.schedule.cancel = None
 
     if meta_data is not None:
+        # TODO: drive_agent.meta_data is not stored in each point node instead of a dictionary in the driver agent.
         driver_agent.meta_data = meta_data
 
     if mock_publish_wrapper:
