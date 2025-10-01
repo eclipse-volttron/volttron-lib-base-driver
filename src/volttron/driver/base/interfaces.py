@@ -411,15 +411,13 @@ class BaseInterface(object, metaclass=abc.ABCMeta):
         :returns: Dictionary of points to any exceptions raised
         :rtype: dict
         """
-        results = {}
-
+        results, errors = {}, {}
         for topic, value in topics_values:
             try:
-                self.set_point(topic, value, **kwargs)
+                results[topic] = self.set_point(topic, value, **kwargs)
             except Exception as e:
-                results[topic] = repr(e)
-
-        return results
+                errors[topic] = repr(e)
+        return results, errors
 
     @classmethod
     def get_interface_subclass(cls, driver_type, module=None):
