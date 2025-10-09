@@ -159,9 +159,9 @@ import logging
 from typing import Iterable
 from weakref import WeakSet
 
-from volttron.utils import get_module, get_subclasses
+from .config import PointConfig, RemoteConfig
+from .dynamic_helper import get_module, get_subclasses
 
-from volttron.driver.base.config import PointConfig, RemoteConfig
 
 _log = logging.getLogger(__name__)
 

@@ -26,9 +26,9 @@ import gevent
 import logging
 import random
 
-from volttron.client.messaging import headers as headers_mod
-from volttron.client.vip.agent.errors import Again, VIPError
-from volttron.utils import format_timestamp, get_aware_utc_now
+from volttron.platform.messaging import headers as headers_mod
+from volttron.platform.vip.agent.errors import Again, VIPError
+from volttron.platform.agent.utils import format_timestamp, get_aware_utc_now
 
 from volttron.driver.base.driver_locks import publish_lock
 

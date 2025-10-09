@@ -31,7 +31,7 @@ from typing import Any, cast
 from weakref import WeakSet
 
 
-from volttron.client.vip.agent import Agent
+from volttron.platform.vip.agent import Agent
 
 from volttron.driver.base.interfaces import BaseInterface
 from volttron.driver.base.config import PointConfig, RemoteConfig
