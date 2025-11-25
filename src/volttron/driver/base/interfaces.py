@@ -246,7 +246,7 @@ class BaseInterface(object, metaclass=abc.ABCMeta):
 
     REGISTER_CONFIG_CLASS = PointConfig
     INTERFACE_CONFIG_CLASS = RemoteConfig
-    default_config = None
+    default_config: dict | None = None
 
     def __init__(self, config: RemoteConfig, driver_agent, *args, **kwargs):
         # Object does not take any arguments to the init.
