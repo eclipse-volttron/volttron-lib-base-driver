@@ -121,7 +121,7 @@ class DriverAgent:
             if results:
                 for topic, value in results.items():
                     point = poll_set.points.get(topic)
-                    if point and point.active:
+                    if point and self.equipment_model.is_active(topic):
                         point.last_value = value
                 self.publish_poll(results, poll_set)
             return True  # TODO: There could really be better logic in the method to measure success.
