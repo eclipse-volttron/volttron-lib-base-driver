@@ -54,10 +54,10 @@ def publish_wrapper(vip, topic, headers, message):
     while True:
         try:
             with publish_lock():
-                _log.debug("publishing: " + topic)
+                #_log.debug("publishing: " + topic)
                 # TODO: Do we really need to block on every publish call?
                 vip.pubsub.publish('pubsub', topic, headers=headers, message=message).get(timeout=10.0)
-                _log.debug("finish publishing: " + topic)
+                #_log.debug("finish publishing: " + topic)
         except gevent.Timeout:
             _log.warning("Did not receive confirmation of publish to " + topic)
             break

@@ -51,7 +51,7 @@ def get_module(module: str) -> ModuleType:
     try:
         return importlib.import_module(module)
     except ModuleNotFoundError as e:
-        _log.debug(f"Module: {module} not found. Make sure it is on the PYTHONPATH")
+        _log.warning(f"Module: {module} not found. Make sure it is on the PYTHONPATH")
         raise e
 
 
@@ -72,7 +72,7 @@ def get_class(module: str | ModuleType, class_name: str) -> Type:
             return getattr(get_module(module), class_name)
         return getattr(module, class_name)
     except AttributeError as e:
-        _log.debug(f"Class {class_name} is not defined in {module}.")
+        _log.warning(f"Class {class_name} is not defined in {module}.")
         raise e
 
 

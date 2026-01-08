@@ -230,7 +230,7 @@ class DriverAgent:
 
     def add_equipment(self, device_node):
         # TODO: Is logic needed for scheduling or any other purpose on adding equipment to this remote?
-        _log.debug(f'IN ADD EQUIPMENT, with device_node: {device_node.identifier}')
+        #_log.debug(f'IN ADD EQUIPMENT, with device_node: {device_node.identifier}')
         self.add_registers([p.config for p in self.equipment_model.points(device_node.identifier)],
                            device_node.identifier)
         self.equipment.add(device_node)
