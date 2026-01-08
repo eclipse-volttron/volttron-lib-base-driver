@@ -75,7 +75,7 @@ class DriverAgent:
         :param registry_config: A list of registry points represented as PointConfigs
         :param base_topic: The portion of the topic shared by all points in this registry.
         """
-        _log.debug(f'IN ADD REGISTERS WITH REGISTRY_CONFIG: {registry_config}')
+        #_log.debug(f'IN ADD REGISTERS WITH REGISTRY_CONFIG: {registry_config}')
         for register_config in registry_config:
             register = self.interface.create_register(register_config)
             self.interface.insert_register(register, base_topic)
@@ -109,13 +109,13 @@ class DriverAgent:
             }
 
     def poll_data(self, poll_set): # PollSet):
-        _log.debug(f'@@@@@ Polling: {self.unique_id}')
+        #_log.debug(f'@@@@@ Polling: {self.unique_id}')
         if self.scalability_test:  # TODO: Update scalability testing.
             self.scalability_test.poll_starting(self.unique_id)
         try:
-            _log.debug('@@@@@ BEFORE GET_MULTIPLE_POINTS IN POLL_DATA')
+            #_log.debug('@@@@@ BEFORE GET_MULTIPLE_POINTS IN POLL_DATA')
             results, errors = self.interface.get_multiple_points(poll_set.points.keys())
-            _log.debug('@@@@@ AFTER GET_MULTIPLE_POINTS IN POLL_DATA')
+            #_log.debug('@@@@@ AFTER GET_MULTIPLE_POINTS IN POLL_DATA')
             for failed_point, failure_message in errors.items():
                 _log.warning(f'Failed to poll {failed_point}: {failure_message}')
             if results:
