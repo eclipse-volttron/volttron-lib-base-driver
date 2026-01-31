@@ -209,6 +209,8 @@ class DriverAgent:
             point_depth_topic, point_breadth_topic = et.get_point_topics(point_topic)
             device_depth_topic, device_breadth_topic = et.get_device_topics(point_topic)
             point_node = self.equipment_model.get_node(point_topic)
+            if point_node and self.equipment_model.is_active(point_topic):
+                point_node.last_value = value
             if et.is_published_single_depth(point_topic):
                 publish_wrapper(self.vip, point_depth_topic, headers, [value, point_node.meta_data])
             if et.is_published_single_breadth(point_topic):
@@ -223,11 +225,11 @@ class DriverAgent:
                 multi_breadth_meta[device_breadth_topic][point_name] = point_node.meta_data
         if multi_depth_values:
             for device_topic in multi_depth_values:
-                publish_wrapper(self.vip, device_topic, headers,
+                publish_wrapper(self.vip, f'{device_topic}/multi', headers,
                                       [multi_depth_values[device_topic], multi_depth_meta[device_topic]])
         if multi_breadth_values:
             for device_topic in multi_breadth_values:
-                publish_wrapper(self.vip, device_topic, headers,
+                publish_wrapper(self.vip, f'{device_topic}/multi', headers,
                                 [multi_breadth_values[device_topic], multi_breadth_meta[device_topic]])
 
     def add_equipment(self, device_node):
