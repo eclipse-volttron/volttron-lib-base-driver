@@ -112,13 +112,12 @@ class DriverAgent:
         }
 
     def poll_data(self, poll_set): # PollSet):
-        #_log.debug(f'@@@@@ Polling: {self.unique_id}')
         if self.scalability_test:  # TODO: Update scalability testing.
             self.scalability_test.poll_starting(self.unique_id)
         try:
-            #_log.debug('@@@@@ BEFORE GET_MULTIPLE_POINTS IN POLL_DATA')
+            if not set(poll_set.points.keys()):
+                return False
             results, errors = self.interface.get_multiple_points(poll_set.points.keys())
-            #_log.debug('@@@@@ AFTER GET_MULTIPLE_POINTS IN POLL_DATA')
             for failed_point, failure_message in errors.items():
                 _log.warning(f'Failed to poll {failed_point}: {failure_message}')
             if results:
