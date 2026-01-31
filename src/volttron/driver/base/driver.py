@@ -86,27 +86,30 @@ class DriverAgent:
             _log.warning(f'Exception occurred while finalizing setup of interface for {self.unique_id}: {e}.')
 
         for point_name in self.interface.get_register_names():
-            register = self.interface.get_register_by_name(point_name)
-            point = self.equipment_model.get_node(point_name)
-            # TODO: It might be more reasonable to either have the register be aware of the type mappings or have a
-            #  type-mapping function separately. This is rather limiting. What is "ts" anyway? TypeScript?
-            if register.register_type == 'bit':
-                ts_type = 'boolean'
-            else:
-                if register.python_type is int:
-                    ts_type = 'integer'
-                elif register.python_type is float:
-                    ts_type = 'float'
-                elif register.python_type is str:
-                    ts_type = 'string'
-            # TODO: Why is there not an else here? ts_type may be undefined.
-            # TODO: meta_data may belong in the PointNode object. This function could take points instead of their
-            #  configs and pack the data into the PointNode instead of a separate dictionary in this class.
-            point.meta_data = {
-                'units': register.get_units(),
-                'type': ts_type,
-                'tz': self.tz
-            }
+            self.update_metadata(point_name)
+
+    def update_metadata(self, point_name):
+        register = self.interface.get_register_by_name(point_name)
+        point = self.equipment_model.get_node(point_name)
+        # TODO: It might be more reasonable to either have the register be aware of the type mappings or have a
+        #  type-mapping function separately. This is rather limiting. What is "ts" anyway? TypeScript?
+        if register.register_type == 'bit':
+            ts_type = 'boolean'
+        else:
+            if register.python_type is int:
+                ts_type = 'integer'
+            elif register.python_type is float:
+                ts_type = 'float'
+            elif register.python_type is str:
+                ts_type = 'string'
+        # TODO: Why is there not an else here? ts_type may be undefined.
+        # TODO: meta_data may belong in the PointNode object. This function could take points instead of their
+        #  configs and pack the data into the PointNode instead of a separate dictionary in this class.
+        point.meta_data = {
+            'units': register.get_units(),
+            'type': ts_type,
+            'tz': self.tz
+        }
 
     def poll_data(self, poll_set): # PollSet):
         #_log.debug(f'@@@@@ Polling: {self.unique_id}')
