@@ -58,6 +58,7 @@ class EquipmentConfig(BaseModel):
     publish_all_depth: Annotated[bool | None, empty_str_is(None)] = Field(default=None, alias='publish_depth_first_all')
     publish_all_breadth: Annotated[bool | None, empty_str_is(None)] = Field(default=None, alias='publish_breadth_first_all')
     reservation_required_for_write: Annotated[bool, empty_str_is(False)] = False  # TODO: Should this default to None for tree-based resolution?
+    strict_all_publishes: Annotated[bool | None, empty_str_is(None)] = None
 
     @field_validator('polling_interval', mode='before')
     @classmethod
