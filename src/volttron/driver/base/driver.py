@@ -91,20 +91,17 @@ class DriverAgent:
     def update_metadata(self, point_name):
         register = self.interface.get_register_by_name(point_name)
         point = self.equipment_model.get_node(point_name)
-        # TODO: It might be more reasonable to either have the register be aware of the type mappings or have a
-        #  type-mapping function separately. This is rather limiting. What is "ts" anyway? TypeScript?
-        if register.register_type == 'bit':
+        # TODO: Move the mapping logic hereto an abstract method in the Interface or Register classes?
+        if register.register_type == 'bit' or register.python_type is bool:
             ts_type = 'boolean'
+        elif register.python_type is int:
+            ts_type = 'integer'
+        elif register.python_type is float:
+            ts_type = 'float'
+        elif register.python_type is str:
+            ts_type = 'string'
         else:
-            if register.python_type is int:
-                ts_type = 'integer'
-            elif register.python_type is float:
-                ts_type = 'float'
-            elif register.python_type is str:
-                ts_type = 'string'
-        # TODO: Why is there not an else here? ts_type may be undefined.
-        # TODO: meta_data may belong in the PointNode object. This function could take points instead of their
-        #  configs and pack the data into the PointNode instead of a separate dictionary in this class.
+            ts_type = str(register.python_type)  # TODO: Should this just be "undefined" or something?
         point.meta_data = {
             'units': register.get_units(),
             'type': ts_type,
