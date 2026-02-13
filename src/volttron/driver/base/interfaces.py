@@ -159,9 +159,9 @@ import logging
 from typing import Iterable
 from weakref import WeakSet
 
-from volttron.utils import get_module, get_subclasses
+from .config import PointConfig, RemoteConfig
+from .dynamic_helper import get_module, get_subclasses
 
-from volttron.driver.base.config import PointConfig, RemoteConfig
 
 _log = logging.getLogger(__name__)
 
@@ -246,6 +246,7 @@ class BaseInterface(object, metaclass=abc.ABCMeta):
 
     REGISTER_CONFIG_CLASS = PointConfig
     INTERFACE_CONFIG_CLASS = RemoteConfig
+    default_config: dict | None = None
 
     def __init__(self, config: RemoteConfig, driver_agent, *args, **kwargs):
         # Object does not take any arguments to the init.

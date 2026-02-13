@@ -31,7 +31,7 @@ from typing import Any, cast
 from weakref import WeakSet
 
 
-from volttron.client.vip.agent import Agent
+from volttron.platform.vip.agent import Agent
 
 from volttron.driver.base.interfaces import BaseInterface
 from volttron.driver.base.config import PointConfig, RemoteConfig
@@ -75,7 +75,7 @@ class DriverAgent:
         :param registry_config: A list of registry points represented as PointConfigs
         :param base_topic: The portion of the topic shared by all points in this registry.
         """
-        _log.debug(f'IN ADD REGISTERS WITH REGISTRY_CONFIG: {registry_config}')
+        #_log.debug(f'IN ADD REGISTERS WITH REGISTRY_CONFIG: {registry_config}')
         for register_config in registry_config:
             register = self.interface.create_register(register_config)
             self.interface.insert_register(register, base_topic)
@@ -86,42 +86,41 @@ class DriverAgent:
             _log.warning(f'Exception occurred while finalizing setup of interface for {self.unique_id}: {e}.')
 
         for point_name in self.interface.get_register_names():
-            register = self.interface.get_register_by_name(point_name)
-            point = self.equipment_model.get_node(point_name)
-            # TODO: It might be more reasonable to either have the register be aware of the type mappings or have a
-            #  type-mapping function separately. This is rather limiting. What is "ts" anyway? TypeScript?
-            if register.register_type == 'bit':
-                ts_type = 'boolean'
-            else:
-                if register.python_type is int:
-                    ts_type = 'integer'
-                elif register.python_type is float:
-                    ts_type = 'float'
-                elif register.python_type is str:
-                    ts_type = 'string'
-            # TODO: Why is there not an else here? ts_type may be undefined.
-            # TODO: meta_data may belong in the PointNode object. This function could take points instead of their
-            #  configs and pack the data into the PointNode instead of a separate dictionary in this class.
-            point.meta_data = {
-                'units': register.get_units(),
-                'type': ts_type,
-                'tz': self.tz
-            }
+            self.update_metadata(point_name)
+
+    def update_metadata(self, point_name):
+        register = self.interface.get_register_by_name(point_name)
+        point = self.equipment_model.get_node(point_name)
+        # TODO: Move the mapping logic hereto an abstract method in the Interface or Register classes?
+        if register.register_type == 'bit' or register.python_type is bool:
+            ts_type = 'boolean'
+        elif register.python_type is int:
+            ts_type = 'integer'
+        elif register.python_type is float:
+            ts_type = 'float'
+        elif register.python_type is str:
+            ts_type = 'string'
+        else:
+            ts_type = str(register.python_type)  # TODO: Should this just be "undefined" or something?
+        point.meta_data = {
+            'units': register.get_units(),
+            'type': ts_type,
+            'tz': self.tz
+        }
 
     def poll_data(self, poll_set): # PollSet):
-        _log.debug(f'@@@@@ Polling: {self.unique_id}')
         if self.scalability_test:  # TODO: Update scalability testing.
             self.scalability_test.poll_starting(self.unique_id)
         try:
-            _log.debug('@@@@@ BEFORE GET_MULTIPLE_POINTS IN POLL_DATA')
+            if not set(poll_set.points.keys()):
+                return False
             results, errors = self.interface.get_multiple_points(poll_set.points.keys())
-            _log.debug('@@@@@ AFTER GET_MULTIPLE_POINTS IN POLL_DATA')
             for failed_point, failure_message in errors.items():
                 _log.warning(f'Failed to poll {failed_point}: {failure_message}')
             if results:
                 for topic, value in results.items():
                     point = poll_set.points.get(topic)
-                    if point and point.active:
+                    if point and self.equipment_model.is_active(topic):
                         point.last_value = value
                 self.publish_poll(results, poll_set)
             return True  # TODO: There could really be better logic in the method to measure success.
@@ -207,6 +206,8 @@ class DriverAgent:
             point_depth_topic, point_breadth_topic = et.get_point_topics(point_topic)
             device_depth_topic, device_breadth_topic = et.get_device_topics(point_topic)
             point_node = self.equipment_model.get_node(point_topic)
+            if point_node and self.equipment_model.is_active(point_topic):
+                point_node.last_value = value
             if et.is_published_single_depth(point_topic):
                 publish_wrapper(self.vip, point_depth_topic, headers, [value, point_node.meta_data])
             if et.is_published_single_breadth(point_topic):
@@ -221,16 +222,16 @@ class DriverAgent:
                 multi_breadth_meta[device_breadth_topic][point_name] = point_node.meta_data
         if multi_depth_values:
             for device_topic in multi_depth_values:
-                publish_wrapper(self.vip, device_topic, headers,
+                publish_wrapper(self.vip, f'{device_topic}/multi', headers,
                                       [multi_depth_values[device_topic], multi_depth_meta[device_topic]])
         if multi_breadth_values:
             for device_topic in multi_breadth_values:
-                publish_wrapper(self.vip, device_topic, headers,
+                publish_wrapper(self.vip, f'{device_topic}/multi', headers,
                                 [multi_breadth_values[device_topic], multi_breadth_meta[device_topic]])
 
     def add_equipment(self, device_node):
         # TODO: Is logic needed for scheduling or any other purpose on adding equipment to this remote?
-        _log.debug(f'IN ADD EQUIPMENT, with device_node: {device_node.identifier}')
+        #_log.debug(f'IN ADD EQUIPMENT, with device_node: {device_node.identifier}')
         self.add_registers([p.config for p in self.equipment_model.points(device_node.identifier)],
                            device_node.identifier)
         self.equipment.add(device_node)
