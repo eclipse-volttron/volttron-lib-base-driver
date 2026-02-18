@@ -26,9 +26,17 @@ import contextlib
 from typing import Any
 
 from mock import create_autospec
-from volttron.client.vip.agent import Agent
-from volttron.client.vip.agent.core import ScheduledEvent
-from volttrontesting.utils import AgentMock
+
+from importlib.metadata import distribution, PackageNotFoundError
+try:
+    distribution('volttron-core')
+    from volttron.client.vip.agent import Agent
+    from volttron.client.vip.agent.core import ScheduledEvent
+    from volttrontesting.utils import AgentMock
+except PackageNotFoundError:
+    from volttron.platform.vip.agent import Agent
+    from volttron.platform.vip.agent.core import ScheduledEvent
+    from volttrontesting.utils.utils import AgentMock
 
 from volttron.driver.base.driver import DriverAgent
 from volttron.driver.base.interfaces import BaseInterface

@@ -30,12 +30,16 @@ from collections import defaultdict
 from typing import Any, cast
 from weakref import WeakSet
 
+from importlib.metadata import distribution, PackageNotFoundError
+try:
+    distribution('volttron-core')
+    from volttron.client.vip.agent import Agent
+except PackageNotFoundError:
+    from volttron.platform.vip.agent import Agent
 
-from volttron.platform.vip.agent import Agent
-
-from volttron.driver.base.interfaces import BaseInterface
-from volttron.driver.base.config import PointConfig, RemoteConfig
-from volttron.driver.base.utils import publication_headers, publish_wrapper
+from .interfaces import BaseInterface
+from .config import PointConfig, RemoteConfig
+from .utils import publication_headers, publish_wrapper
 # from platform_driver.poll_scheduler import PollSet  # TODO: This should not import from driver. Need to relocate PollSet.
 
 _log = logging.getLogger(__name__)
