@@ -47,7 +47,7 @@ def get_system_socket_limit():
             except OSError:
                 _log.exception('error setting open file limits')
             else:
-                _log.debug('open file resource limit increased from %d to %d', soft,
+                _log.info('open file resource limit increased from %d to %d', soft,
                            system_socket_limit)
         if soft == hard:
             system_socket_limit = soft

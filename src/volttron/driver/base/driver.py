@@ -63,8 +63,6 @@ class DriverAgent:
         self.publishers = {}
 
         try:
-            # TODO: What happens if we have multiple device nodes on this remote?
-            #  Are we losing all settings but the first?
             klass = BaseInterface.get_interface_subclass(self.config.driver_type)
             interface = klass(self.config, self)
             self.interface = cast(BaseInterface, interface)
