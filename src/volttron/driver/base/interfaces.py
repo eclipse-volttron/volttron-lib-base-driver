@@ -246,6 +246,8 @@ class BaseInterface(object, metaclass=abc.ABCMeta):
 
     REGISTER_CONFIG_CLASS = PointConfig
     INTERFACE_CONFIG_CLASS = RemoteConfig
+    interface_callable_methods: set[str] = set()
+    excluded_from_callable_methods: set[str] = set()
     default_config: dict | None = None
 
     def __init__(self, config: RemoteConfig, driver_agent, *args, **kwargs):

@@ -199,6 +199,19 @@ class DriverAgent:
     def revert_all(self, **kwargs):
         self.interface.revert_all(**kwargs)
 
+    def call(self, method_name, topics: list[str], *args, **kwargs):
+        if not method_name in self.interface.interface_callable_methods or not hasattr(self.interface, method_name):
+            err = (f'Called method {method_name} not found on interface "{self.interface.__class__.__name__}".'
+                   f'Check if an expected plugin is not installed.')
+            _log.warning(err)
+            return {}, {topic: err for topic in topics}
+        elif method_name in self.interface.excluded_from_callable_methods:
+            err = f'Called method {method_name}, but it excluded from callable methods by configuration.'
+            _log.warning(err)
+            return {}, {topic: err for topic in topics}
+        else:
+            return getattr(self.interface, method_name)(self.interface, topics=topics, *args, **kwargs)
+
     def publish_push(self, results):
         et = self.equipment_model
         headers = publication_headers()
