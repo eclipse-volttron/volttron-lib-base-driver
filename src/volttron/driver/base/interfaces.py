@@ -417,11 +417,15 @@ class BaseInterface(object, metaclass=abc.ABCMeta):
             try:
                 results[topic] = self.set_point(topic, value, **kwargs)
             except Exception as e:
-                errors[topic] = repr(e)
+                errors[topic] = f'Error setting {topic}: {repr(e)}'
+            except Timeout as e:
+                errors[topic] = f'Timeout setting {topic}: {repr(e)}'
+        if errors:
+            _log.warning(f'Errors encountered setting points: {errors}')
         return results, errors
 
     @classmethod
-    def get_interface_subclass(cls, driver_type, module=None):
+    def get_interface_subclass(cls, driver_type: str, module: str = None):
         """Get Interface SubClass
         Returns the subclass of this class in the module located from driver configuration or from the interface name.
         """
