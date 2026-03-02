@@ -48,7 +48,6 @@ _log = logging.getLogger(__name__)
 class DriverAgent:
     def __init__(self, config: RemoteConfig, core, equipment_model, scalability_test, tz: str, unique_id: Any,
                  vip: Agent.Subsystems):
-        self.config: RemoteConfig = config
         self.core = core
         self.equipment_model = equipment_model  # TODO: This should probably move out of the agent and into the base or a library.
         self.scalability_test = scalability_test  # TODO: If this is used from here, it should probably be in the base driver.
@@ -63,12 +62,14 @@ class DriverAgent:
         self.publishers = {}
 
         try:
-            klass = BaseInterface.get_interface_subclass(self.config.driver_type)
-            interface = klass(self.config, self)
+            klass = BaseInterface.get_interface_subclass(config.driver_type)
+            interface = klass(config, self)
             self.interface = cast(BaseInterface, interface)
         except ValueError as e:
             _log.error(f"Failed to setup device: {e}")
             raise e
+
+        self.config: RemoteConfig = self.interface.config
 
     def add_registers(self, registry_config: list[PointConfig], base_topic: str):
         """
