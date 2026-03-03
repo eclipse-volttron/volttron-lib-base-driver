@@ -26,11 +26,19 @@ import gevent
 import logging
 import random
 
-from volttron.platform.messaging import headers as headers_mod
-from volttron.platform.vip.agent.errors import Again, VIPError
-from volttron.platform.agent.utils import format_timestamp, get_aware_utc_now
+from importlib.metadata import distribution, PackageNotFoundError
 
-from volttron.driver.base.driver_locks import publish_lock
+try:
+    distribution('volttron-core')
+    from volttron.client.messaging import headers as headers_mod
+    from volttron.client.vip.agent.errors import Again, VIPError
+    from volttron.utils import format_timestamp, get_aware_utc_now
+except PackageNotFoundError:
+    from volttron.platform.messaging import headers as headers_mod
+    from volttron.platform.vip.agent.errors import Again, VIPError
+    from volttron.platform.agent.utils import format_timestamp, get_aware_utc_now
+
+from .driver_locks import publish_lock
 
 
 _log = logging.getLogger(__name__)

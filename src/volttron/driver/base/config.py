@@ -117,3 +117,4 @@ class RemoteConfig(BaseModel):
     driver_type: str
     heart_beat_point: str | None = None  # TODO: This needs to become a set (multiple devices could have multiple points).
     module: str | None = None
+    plugins: list[str] = []

@@ -34,7 +34,7 @@ ignore_missing_imports = true
 name = "volttron-lib-base-driver"
 version = "2.0.0rc2"
 description = "Volttron Driver libraries used to support development within the Volttron Driver Framework."
-authors = ["Mark Bonicillo <volttron@pnnl.gov>"]
+authors = ["VOLTTRON Team <volttron@pnnl.gov>"]
 license = "Apache License 2.0"
 readme = "README.md"
 repository = "https://github.com/eclipse-volttron/volttron-lib-base-driver"
@@ -54,7 +54,7 @@ classifiers = [
 pydantic = ">=2.9.2"
 pydantic-core = ">=2.23.4"
 python = ">=3.10,<4.0"
-volttron-core = ">=2.0.0rc0"
+volttron-core = ">=2.0.0rc23"
 
 [tool.poetry.group.documentation.dependencies]
 Sphinx = "^4.5.0"

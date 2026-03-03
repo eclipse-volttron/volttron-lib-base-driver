@@ -156,6 +156,9 @@ to set values for each point to revert to.
 import abc
 import logging
 
+from gevent import Timeout
+from importlib import import_module
+from pkgutil import iter_modules
 from typing import Iterable
 from weakref import WeakSet
 
@@ -246,12 +249,15 @@ class BaseInterface(object, metaclass=abc.ABCMeta):
 
     REGISTER_CONFIG_CLASS = PointConfig
     INTERFACE_CONFIG_CLASS = RemoteConfig
+    interface_callable_methods: set[str] = set()
+    excluded_from_callable_methods: set[str] = set()
     default_config: dict | None = None
 
     def __init__(self, config: RemoteConfig, driver_agent, *args, **kwargs):
         # Object does not take any arguments to the init.
         super(BaseInterface, self).__init__()
-        self.config = config
+        self.apply_plugins(config)
+        self.config = self.INTERFACE_CONFIG_CLASS(**(self.default_config | config.model_dump()))
         self.driver_agent = driver_agent
 
         self.point_map = {}
@@ -271,6 +277,25 @@ class BaseInterface(object, metaclass=abc.ABCMeta):
             :param: initial_setup True on the first call. False for calls after changes.
             """
         pass
+
+    def apply_plugins(self, config: RemoteConfig):
+        try:
+            installed_plugins = import_module(f'volttron.driver.plugins.interfaces.{config.driver_type}')
+            normalized_config_plugins = [p.replace('-', '_') for p in config.plugins]
+            for m in iter_modules(installed_plugins.__path__, installed_plugins.__name__ + '.'):
+                try:
+                    if hasattr(m, 'name') and m.name.split('.')[-1] in normalized_config_plugins:
+                        module = import_module(m.name)
+                        if hasattr(module, 'INTERFACE_PLUGINS'):
+                            for interface_plugin in module.INTERFACE_PLUGINS:
+                                interface_plugin.plug_into(self)
+                except AttributeError as e:
+                    _log.warning(f'Unable to load plugin "{m.name}: {e}')
+        except ModuleNotFoundError as e:
+            _log.warning(f'Failed to load module: {e}')
+            return
+        except Exception as e:
+            _log.warning(f'Unexpected error loading plugins: {e}')
 
     def get_register_by_name(self, name: str) -> BaseRegister:
         """
@@ -417,11 +442,15 @@ class BaseInterface(object, metaclass=abc.ABCMeta):
             try:
                 results[topic] = self.set_point(topic, value, **kwargs)
             except Exception as e:
-                errors[topic] = repr(e)
+                errors[topic] = f'Error setting {topic}: {repr(e)}'
+            except Timeout as e:
+                errors[topic] = f'Timeout setting {topic}: {repr(e)}'
+        if errors:
+            _log.warning(f'Errors encountered setting points: {errors}')
         return results, errors
 
     @classmethod
-    def get_interface_subclass(cls, driver_type, module=None):
+    def get_interface_subclass(cls, driver_type: str, module: str = None):
         """Get Interface SubClass
         Returns the subclass of this class in the module located from driver configuration or from the interface name.
         """

@@ -30,12 +30,16 @@ from collections import defaultdict
 from typing import Any, cast
 from weakref import WeakSet
 
+from importlib.metadata import distribution, PackageNotFoundError
+try:
+    distribution('volttron-core')
+    from volttron.client.vip.agent import Agent
+except PackageNotFoundError:
+    from volttron.platform.vip.agent import Agent
 
-from volttron.platform.vip.agent import Agent
-
-from volttron.driver.base.interfaces import BaseInterface
-from volttron.driver.base.config import PointConfig, RemoteConfig
-from volttron.driver.base.utils import publication_headers, publish_wrapper
+from .interfaces import BaseInterface
+from .config import PointConfig, RemoteConfig
+from .utils import publication_headers, publish_wrapper
 # from platform_driver.poll_scheduler import PollSet  # TODO: This should not import from driver. Need to relocate PollSet.
 
 _log = logging.getLogger(__name__)
@@ -44,7 +48,6 @@ _log = logging.getLogger(__name__)
 class DriverAgent:
     def __init__(self, config: RemoteConfig, core, equipment_model, scalability_test, tz: str, unique_id: Any,
                  vip: Agent.Subsystems):
-        self.config: RemoteConfig = config
         self.core = core
         self.equipment_model = equipment_model  # TODO: This should probably move out of the agent and into the base or a library.
         self.scalability_test = scalability_test  # TODO: If this is used from here, it should probably be in the base driver.
@@ -59,14 +62,14 @@ class DriverAgent:
         self.publishers = {}
 
         try:
-            # TODO: What happens if we have multiple device nodes on this remote?
-            #  Are we losing all settings but the first?
-            klass = BaseInterface.get_interface_subclass(self.config.driver_type)
-            interface = klass(self.config, self)
+            klass = BaseInterface.get_interface_subclass(config.driver_type)
+            interface = klass(config, self)
             self.interface = cast(BaseInterface, interface)
         except ValueError as e:
             _log.error(f"Failed to setup device: {e}")
             raise e
+
+        self.config: RemoteConfig = self.interface.config
 
     def add_registers(self, registry_config: list[PointConfig], base_topic: str):
         """
@@ -196,6 +199,19 @@ class DriverAgent:
 
     def revert_all(self, **kwargs):
         self.interface.revert_all(**kwargs)
+
+    def call(self, method_name, topics: list[str], *args, **kwargs):
+        if not method_name in self.interface.interface_callable_methods or not hasattr(self.interface, method_name):
+            err = (f'Called method {method_name} not found on interface "{self.interface.__class__.__name__}".'
+                   f'Check if an expected plugin is not installed.')
+            _log.warning(err)
+            return {}, {topic: err for topic in topics}
+        elif method_name in self.interface.excluded_from_callable_methods:
+            err = f'Called method {method_name}, but it excluded from callable methods by configuration.'
+            _log.warning(err)
+            return {}, {topic: err for topic in topics}
+        else:
+            return getattr(self.interface, method_name)(self.interface, topics=topics, *args, **kwargs)
 
     def publish_push(self, results):
         et = self.equipment_model

@@ -23,16 +23,22 @@
 # }}}
 
 import logging
-import sys
-from copy import copy
-from datetime import date, datetime, time
-from pathlib import Path
-
 import mock
 import pytest
 import pytz
+import sys
+
+from copy import copy
+from datetime import date, datetime, time
+from importlib.metadata import distribution, PackageNotFoundError
+from pathlib import Path
 from utils import base_driver_agent
-from volttron.client.vip.agent.core import ScheduledEvent
+
+try:
+    distribution('volttron-core')
+    from volttron.client.vip.agent.core import ScheduledEvent
+except PackageNotFoundError:
+    from volttron.platform.vip.agent.core import ScheduledEvent
 
 from volttron.driver.base.driver import DriverAgent
 from volttron.driver.base.interfaces import BaseInterface
