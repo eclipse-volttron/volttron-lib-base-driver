@@ -178,9 +178,9 @@ class DriverAgent:
     def heart_beat(self):
         if self.config.heart_beat_point is None:
             return
-        self.heart_beat_value = int(not bool(self.heart_beat_value))
-        # TODO: config.heart_beat_point should be a set.
-        self.set_point(self.config.heart_beat_point, self.heart_beat_value)
+        heart_beat_value = int(not bool(self.heart_beat_value))
+        self.set_point(self.config.heart_beat_point, heart_beat_value)
+        self.heart_beat_value = heart_beat_value
 
     def get_point(self, topic, **kwargs):
         return self.interface.get_point(topic, **kwargs)
