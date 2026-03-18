@@ -32,7 +32,7 @@ ignore_missing_imports = true
 
 [tool.poetry]
 name = "volttron-lib-base-driver"
-version = "2.0.0rc3"
+version = "2.0.0rc4"
 description = "Volttron Driver libraries used to support development within the Volttron Driver Framework."
 authors = ["VOLTTRON Team <volttron@pnnl.gov>"]
 license = "Apache License 2.0"
