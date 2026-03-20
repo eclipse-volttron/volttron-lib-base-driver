@@ -58,6 +58,8 @@ class EquipmentConfig(BaseModel):
     publish_all_depth: Annotated[bool | None, empty_str_is(None)] = Field(default=None, alias='publish_depth_first_all')
     publish_all_breadth: Annotated[bool | None, empty_str_is(None)] = Field(default=None, alias='publish_breadth_first_all')
     reservation_required_for_write: Annotated[bool, empty_str_is(False)] = False  # TODO: Should this default to None for tree-based resolution?
+    stale_timeout_configured: Annotated[float | None, empty_str_is(None)] = Field(default=None, alias='stale_timeout')
+    stale_timeout_multiplier: Annotated[float, empty_str_is(None)] = Field(default=None)
     strict_all_publishes: Annotated[bool | None, empty_str_is(None)] = None
 
     @field_validator('polling_interval', mode='before')
@@ -71,8 +73,6 @@ class PointConfig(EquipmentConfig):
     data_source: Annotated[DataSource, empty_str_is(DataSource.SHORT_POLL)] = Field(default=DataSource.SHORT_POLL, alias='Data Source')
     notes: str = Field(default='', alias='Notes')
     reference_point_name: str = Field(default='', alias='Reference Point Name')
-    stale_timeout_configured: Annotated[float | None, empty_str_is(None)] = Field(default=None, alias='stale_timeout')
-    stale_timeout_multiplier: Annotated[float, empty_str_is(3.0)] = Field(default=3.0)
     units: str = Field(default='', alias='Units')
     units_details: str = Field(default='', alias='Unit Details')
     volttron_point_name: str = Field(alias='Volttron Point Name')
@@ -88,20 +88,6 @@ class PointConfig(EquipmentConfig):
     @field_serializer('data_source')
     def _serialize_data_source(self, data_source):
         return data_source.value
-
-    @computed_field
-    @property
-    def stale_timeout(self) -> timedelta | None:
-        if self.stale_timeout_configured is None and self.polling_interval is None:
-            return None
-        else:
-            return timedelta(seconds=(self.stale_timeout_configured
-                    if self.stale_timeout_configured is not None
-                    else self.polling_interval * self.stale_timeout_multiplier))
-
-    @stale_timeout.setter
-    def stale_timeout(self, value):
-        self.stale_timeout_configured = value
 
 
 class DeviceConfig(EquipmentConfig):
