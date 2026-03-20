@@ -68,20 +68,6 @@ class EquipmentConfig(BaseModel):
         # TODO: This does not match int above, but we may need to convert to ms in calculations.
         return None if v == '' or v is None else float(v)
 
-    @computed_field
-    @property
-    def stale_timeout(self) -> timedelta | None:
-        if self.stale_timeout_configured is None and self.polling_interval is None:
-            return None
-        else:
-            return timedelta(seconds=(self.stale_timeout_configured
-                    if self.stale_timeout_configured is not None
-                    else self.polling_interval * self.stale_timeout_multiplier))
-
-    @stale_timeout.setter
-    def stale_timeout(self, value):
-        self.stale_timeout_configured = value
-
 
 class PointConfig(EquipmentConfig):
     data_source: Annotated[DataSource, empty_str_is(DataSource.SHORT_POLL)] = Field(default=DataSource.SHORT_POLL, alias='Data Source')
