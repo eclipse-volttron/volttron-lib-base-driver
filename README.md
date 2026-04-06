@@ -21,10 +21,16 @@ Before installing, VOLTTRON should be installed and running.  Its virtual enviro
 Information on how to install of the VOLTTRON platform can be found
 [here](https://github.com/eclipse-volttron/volttron-core).
 
-Install the library. You have two options. You can install this library using the version on PyPi:
+Install the library into the running VOLTTRON instance:
 
 ```shell
-poetry add --directory $VOLTTRON_HOME volttron-lib-base-driver
+vctl install-lib volttron-lib-base-driver
+```
+
+To remove it later, use:
+
+```shell
+vctl remove-lib volttron-lib-base-driver
 ```
 
 ## Development
