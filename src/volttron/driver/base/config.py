@@ -91,7 +91,7 @@ class PointConfig(EquipmentConfig):
 
 
 class DeviceConfig(EquipmentConfig):
-    all_publish_interval: float = 0.0
+    all_publish_interval: Annotated[float | None, empty_str_is(None)] = None
     allow_duplicate_remotes: bool = False
     equipment_specific_fields: dict = {}
     registry_config: list[PointConfig] = []
