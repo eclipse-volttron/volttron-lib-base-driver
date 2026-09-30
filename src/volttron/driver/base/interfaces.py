@@ -278,6 +278,22 @@ class BaseInterface(object, metaclass=abc.ABCMeta):
             """
         pass
 
+    def prepare_registry_config(self, registry_config: list[dict], remote_config: RemoteConfig | None = None
+                                ) -> list[dict]:
+        """Adjust raw registry rows before they are validated as REGISTER_CONFIG_CLASS instances.
+
+            The platform driver calls this with the rows exactly as they came from the configuration store, before
+            any validation or creation of point nodes. Interfaces which accept registry rows that are incomplete on
+            their own (for example, rows completed from a separate register map) should override this to return the
+            rows as they should be validated. Rows may be added, dropped, or altered. The default returns the rows
+            unchanged.
+
+            :param registry_config: The registry rows as dictionaries.
+            :param remote_config: The remote configuration accompanying this registry, if the caller has it. This may
+                                  be newer than self.config when a configuration is being updated.
+            """
+        return registry_config
+
     def apply_plugins(self, config: RemoteConfig):
         try:
             installed_plugins = import_module(f'volttron.driver.plugins.interfaces.{config.driver_type}')
