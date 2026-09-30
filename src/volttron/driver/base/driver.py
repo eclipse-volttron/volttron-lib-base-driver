@@ -159,17 +159,27 @@ class DriverAgent:
                     _log.warning(f'Failed to publish single_breadth publish_topic: {publish_topic}'
                                  f' for identifier: {point_topic} -- {e}')
         for device_topic, points in poll_set.multi_depth.items():
+            values = {point.rsplit('/', 1)[-1]: results[point] for point in points if point in results}
+            if not values:
+                _log.warning(f'No values were returned for any of the {len(points)} polled points of {device_topic}.'
+                             f' Skipping the {device_topic}/multi publish.')
+                continue
             try:
                 publish_wrapper(self.vip, f'{device_topic}/multi', headers=headers, message=[
-                    {point.rsplit('/', 1)[-1]: results[point] for point in points if point in results},
+                    values,
                     {point.rsplit('/', 1)[-1]: self.equipment_model.get_node(point).meta_data for point in points}
                 ])
             except Exception as e:
                 _log.warning(f'Failed to publish multi_depth device_topic: {device_topic} -- {e}')
         for publish_topic, points in poll_set.multi_breadth.items():
+            values = {point.rsplit('/', 1)[-1]: results[point] for point in points if point in results}
+            if not values:
+                _log.warning(f'No values were returned for any of the {len(points)} polled points of {publish_topic}.'
+                             f' Skipping the {publish_topic}/multi publish.')
+                continue
             try:
                 publish_wrapper(self.vip, f'{publish_topic}/multi', headers=headers, message=[
-                    {point.rsplit('/', 1)[-1]: results[point] for point in points if point in results},
+                    values,
                     {point.rsplit('/', 1)[-1]: self.equipment_model.get_node(point).meta_data for point in points}
                 ])
             except Exception as e:
@@ -248,10 +258,12 @@ class DriverAgent:
     def add_equipment(self, device_node):
         # TODO: Is logic needed for scheduling or any other purpose on adding equipment to this remote?
         #_log.debug(f'IN ADD EQUIPMENT, with device_node: {device_node.identifier}')
-        self.add_registers([p.config for p in self.equipment_model.points(device_node.identifier)],
+        # Only the device's own points: points(...) would also return those of any device nested beneath this topic.
+        self.add_registers([p.config for p in self.equipment_model.device_points(device_node.identifier)],
                            device_node.identifier)
         self.equipment.add(device_node)
 
     @property
     def point_set(self):
-            return {point for equip in self.equipment for point in self.equipment_model.points(equip.identifier)}
+        return {point for equip in self.equipment
+                for point in self.equipment_model.device_points(equip.identifier)}
