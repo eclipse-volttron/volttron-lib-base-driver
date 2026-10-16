@@ -24,7 +24,7 @@
 
 from datetime import timedelta
 from enum import Enum
-from pydantic import BaseModel, computed_field, ConfigDict, Field, field_serializer, field_validator, BeforeValidator
+from pydantic import AliasChoices, BaseModel, computed_field, ConfigDict, Field, field_serializer, field_validator, BeforeValidator
 from typing import Annotated
 
 class DataSource(Enum):
@@ -85,7 +85,9 @@ def empty_str_is(default):
 class EquipmentConfig(BaseModel):
     model_config = ConfigDict(validate_assignment=True, populate_by_name=True)
     active: Annotated[bool | None, empty_str_is(None)] = None
-    group: Annotated[str | None, empty_str_is(None)] = None
+    # The polling group (see the platform driver's `groups`). `group` and `Group` are the names of earlier configurations.
+    polling_group: Annotated[str | None, empty_str_is(None)] = Field(
+        default=None, validation_alias=AliasChoices('polling_group', 'group', 'Group'))
     # TODO: If this needs to be an int, we may need to use milliseconds someplace.
     polling_interval: Annotated[int | None, empty_str_is(None)] = Field(default=None, alias='interval')
     publish_single_depth: Annotated[bool | None, empty_str_is(None)] = Field(default=None, alias='publish_depth_first_single')
