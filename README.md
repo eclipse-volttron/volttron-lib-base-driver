@@ -33,6 +33,31 @@ To remove it later, use:
 vctl remove-lib volttron-lib-base-driver
 ```
 
+## Proxy-backed interfaces
+
+Interfaces whose protocol runs in a [Protocol Proxy](https://github.com/eclipse-volttron/lib-protocol-proxy) process
+(BACnet, Modbus, DNP3, IEEE 2030.5) share `volttron.driver.base.proxy_interface.ProxyBackedInterface`: the manager
+wiring, the registration handshake, the reply envelope, the mapping of replies onto per-topic results and errors, the
+timeout and failure handling, and the push callback into `publish_push`. A protocol interface lists it first,
+`class Dnp3(ProxyBackedInterface, BasicRevert, BaseInterface)`, sets the message names as class attributes and
+overrides the few hooks whose defaults do not fit (`identity_fields`, `point_fields`, `read_payload`, `read_result`,
+`coerce`, `split_reads`, `split_writes`). `volttron.driver.base.testing` provides `FakePPM`, `serialized` and
+`build_interface` for testing such interfaces without a proxy process. The protocol proxy is an optional dependency:
+`pip install volttron-lib-base-driver[proxy]`.
+
+The proxy manager watches the processes it launches. When an interface's proxy exits or never registers, the interface
+is told, forgets the peer and runs `finalize_setup` again after a growing delay (`RECOVERY_DELAYS`: 1, 2, 5, 10, then
+30 seconds between attempts): the proxy is relaunched and every remote registers with it again, without a platform
+driver restart. Pushed values arriving by topic are checked twice, in `handle_pushed` (only the instance's own points)
+and in `DriverAgent.publish_push` (only points of that remote), so a proxy can only affect the points it serves.
+
+A remote configuration may name a `driver_role`. The default, `client`, reaches a device; a server role (`server`, or
+the protocol's own word such as `outstation`) serves the configured points to a remote peer through the same interface
+class and proxy. Each interface narrows the accepted values and validates the role-specific settings. In a server role
+the registry's `Remote Writable` column says which served points the peer may write (defaulting from the protocol
+address), while `Writable` keeps meaning that the platform may set the point; served rows default to the `server` data
+source, so they are never polled.
+
 ## Development
 
 Please see the following for contributing guidelines [contributing](https://github.com/eclipse-volttron/volttron-core/blob/develop/CONTRIBUTING.md).

@@ -25,7 +25,7 @@
 import contextlib
 from typing import Any
 
-from mock import create_autospec
+from unittest.mock import create_autospec
 
 from importlib.metadata import distribution, PackageNotFoundError
 try:

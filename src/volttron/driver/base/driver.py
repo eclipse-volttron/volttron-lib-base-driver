@@ -224,28 +224,52 @@ class DriverAgent:
             return getattr(self.interface, method_name)(self.interface, topics=topics, *args, **kwargs)
 
     def publish_push(self, results):
+        """Publish values that arrived without a poll (a change of value, an unsolicited response, a served peer's
+        write), keyed by full point topic, and record them as the points' last values.
+
+        Each topic is checked before anything is published: it must name a point of this remote. Anything else (an
+        unknown topic, a device or other non-point node, a point of another remote) is logged and skipped, and one bad
+        topic never prevents the rest of the batch from publishing. The proxy processes that push are authenticated,
+        but this keeps a buggy or compromised proxy from setting values on points it does not serve.
+        """
         et = self.equipment_model
         headers = publication_headers()
         multi_depth_values, multi_depth_meta, multi_breadth_values, multi_breadth_meta = (
             defaultdict(dict), defaultdict(dict), defaultdict(dict), defaultdict(dict))
         for point_topic, value in results.items():
-            point_depth_topic, point_breadth_topic = et.get_point_topics(point_topic)
-            device_depth_topic, device_breadth_topic = et.get_device_topics(point_topic)
-            point_node = self.equipment_model.get_node(point_topic)
-            if point_node and self.equipment_model.is_active(point_topic):
-                point_node.last_value = value
-            if et.is_published_single_depth(point_topic):
-                publish_wrapper(self.vip, point_depth_topic, headers, [value, point_node.meta_data])
-            if et.is_published_single_breadth(point_topic):
-                publish_wrapper(self.vip, point_breadth_topic, headers, [value, point_node.meta_data])
-            if et.is_published_multi_depth(point_topic):
-                point_name = point_topic.rsplit('/', 1)[-1]
-                multi_depth_values[device_depth_topic][point_name] = value
-                multi_depth_meta[device_depth_topic][point_name] = point_node.meta_data
-            if et.is_published_multi_breadth(point_topic):
-                point_name = point_topic.rsplit('/', 1)[-1]
-                multi_breadth_values[device_breadth_topic][point_name] = value
-                multi_breadth_meta[device_breadth_topic][point_name] = point_node.meta_data
+            point_node = et.get_node(point_topic)
+            if point_node is None or not getattr(point_node, 'is_point', False):
+                _log.warning(f'{self.unique_id}: ignoring a pushed value for {point_topic!r}, which is not a point.')
+                continue
+            try:
+                owner = et.get_remote(point_topic)
+            except Exception as e:                                   # a point without a device above it
+                _log.warning(f'{self.unique_id}: ignoring a pushed value for {point_topic!r}: {e}')
+                continue
+            if owner is not self:
+                _log.warning(f'{self.unique_id}: ignoring a pushed value for {point_topic!r}, a point of another remote.')
+                continue
+            try:
+                point_depth_topic, point_breadth_topic = et.get_point_topics(point_topic)
+                device_depth_topic, device_breadth_topic = et.get_device_topics(point_topic)
+                if et.is_active(point_topic):
+                    point_node.last_value = value
+                    if (record := getattr(et, 'record_pushed_value', None)) is not None:
+                        record(point_node)          # the platform driver keeps served points' values across restarts
+                if et.is_published_single_depth(point_topic):
+                    publish_wrapper(self.vip, point_depth_topic, headers, [value, point_node.meta_data])
+                if et.is_published_single_breadth(point_topic):
+                    publish_wrapper(self.vip, point_breadth_topic, headers, [value, point_node.meta_data])
+                if et.is_published_multi_depth(point_topic):
+                    point_name = point_topic.rsplit('/', 1)[-1]
+                    multi_depth_values[device_depth_topic][point_name] = value
+                    multi_depth_meta[device_depth_topic][point_name] = point_node.meta_data
+                if et.is_published_multi_breadth(point_topic):
+                    point_name = point_topic.rsplit('/', 1)[-1]
+                    multi_breadth_values[device_breadth_topic][point_name] = value
+                    multi_breadth_meta[device_breadth_topic][point_name] = point_node.meta_data
+            except Exception as e:
+                _log.warning(f'{self.unique_id}: unable to publish a pushed value for {point_topic!r}: {e}')
         if multi_depth_values:
             for device_topic in multi_depth_values:
                 publish_wrapper(self.vip, f'{device_topic}/multi', headers,

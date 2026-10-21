@@ -472,8 +472,11 @@ class BaseInterface(object, metaclass=abc.ABCMeta):
         """
         module_name = module if module is not None else f"volttron.driver.interfaces.{driver_type}.{driver_type}"
         module = get_module(module_name)
-        subclasses = get_subclasses(module, cls)
-        return subclasses[0]
+        subclasses = get_subclasses(module, cls, return_all=True)
+        # Prefer a class the module defines itself over one it merely imports (a base, a mixin's companion, another
+        # interface used as a helper), so what the module is named for is what gets instantiated.
+        defined_here = [klass for klass in subclasses if klass.__module__ == module.__name__]
+        return (defined_here or subclasses)[0]
 
     @classmethod
     def unique_remote_id(cls, config_name: str, config: RemoteConfig) -> tuple:

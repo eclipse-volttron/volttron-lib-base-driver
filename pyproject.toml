@@ -55,6 +55,11 @@ pydantic = ">=2.9.2"
 pydantic-core = ">=2.23.4"
 python = ">=3.10,<4.0"
 volttron-core = ">=2.0.0rc36"
+# Only ProxyBackedInterface (volttron.driver.base.proxy_interface) and its test helpers need the protocol proxy.
+protocol-proxy = { version = ">=2.0.0rc4", optional = true }
+
+[tool.poetry.extras]
+proxy = ["protocol-proxy"]
 
 [tool.poetry.group.documentation.dependencies]
 Sphinx = "^4.5.0"
