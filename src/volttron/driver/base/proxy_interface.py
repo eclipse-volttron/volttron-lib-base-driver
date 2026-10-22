@@ -333,7 +333,8 @@ class ProxyBackedInterface:
         ``send`` returns an AsyncResult when a response is expected, or False when the request could not be sent.
         The proxy replies ``{'result': ..., 'error': ...}`` from its serializer, or ``{'status': 'error', 'error':
         ..., 'method': ...}`` when the endpoint raised or timed out. Whole-request failures are reported against every
-        key in ``error_keys``. A gevent Timeout waiting on the AsyncResult is left to propagate to the caller.
+        key in ``error_keys``, including a connection lost while the request was in flight. A gevent Timeout
+        waiting on the AsyncResult is left to propagate to the caller.
         """
         error_keys = list(error_keys)
 
@@ -342,7 +343,10 @@ class ProxyBackedInterface:
 
         if not isinstance(response, AsyncResult):
             return failed(f'Unable to send request to {self.proxy_label} (send returned {response!r}).')
-        raw = response.get(timeout=self.reply_timeout())
+        try:
+            raw = response.get(timeout=self.reply_timeout())
+        except ConnectionError as e:        # the connection to the proxy was lost with this request in flight
+            return failed(f'Connection to {self.proxy_label} lost: {e}')
         if not raw:
             return failed(f'Empty response from {self.proxy_label}.')
         try:
