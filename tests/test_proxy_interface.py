@@ -21,6 +21,7 @@ class ToyPointConfig(PointConfig):
 class ToyRemoteConfig(RemoteConfig):
     host: str
     registration_timeout: float = 30.0
+    persistent_connection: bool = False
     reply_timeout: float | None = None
     proxy_group: str | None = None
 
@@ -146,6 +147,14 @@ class TestWiring:
         toy = build_interface(Unregistered, {'driver_type': 'toy', 'host': 'h'}, ppm=ppm)
         toy.finalize_setup(initial_setup=True)
         assert ppm.sent == [] and ppm.launch == (('toy',), {'port': 47808}) and toy.registered == [({}, True)]
+
+    def test_persistent_connection_option_is_passed_to_the_manager_only_when_set(self, ppm):
+        toy = build_interface(Toy, {'driver_type': 'toy', 'host': 'h'}, ppm=ppm)
+        toy.finalize_setup(initial_setup=True)
+        assert ppm.launch == (('toy',), {})                              # default configs launch exactly as before
+        toy = build_interface(Toy, {'driver_type': 'toy', 'host': 'h', 'persistent_connection': True}, ppm=ppm)
+        toy.finalize_setup(initial_setup=True)
+        assert ppm.launch == (('toy',), {'persistent': True})
 
 
 class TestTreeValues:

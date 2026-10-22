@@ -255,7 +255,12 @@ class ProxyBackedInterface:
 
     # ---- lifecycle -----------------------------------------------------------------------------------------------
     def finalize_setup(self, initial_setup: bool = False):
-        self.proxy_peer = self.ppm.get_proxy(self.proxy_key(), **self.proxy_launch_options())
+        options = self.proxy_launch_options()
+        # Connection policy toward the proxy (one persistent connection, or one per message); the manager passes it on
+        # to the proxy as --persistent so both ends agree. Interfaces expose it as ``persistent_connection``.
+        if getattr(self.config, 'persistent_connection', False):
+            options.setdefault('persistent', True)
+        self.proxy_peer = self.ppm.get_proxy(self.proxy_key(), **options)
         self.ppm.wait_peer_registered(self.proxy_peer, self.config.registration_timeout, self.register_remote,
                                       initial_setup)
 
