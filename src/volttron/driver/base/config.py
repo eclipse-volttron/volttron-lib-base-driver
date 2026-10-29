@@ -140,15 +140,27 @@ class DeviceConfig(EquipmentConfig):
 
 class RemoteConfig(BaseModel):
     model_config = ConfigDict(extra='allow', populate_by_name=True, validate_assignment=True)
-    debug: bool = False
-    driver_type: str
+    debug: bool = Field(default=False, json_schema_extra={'advanced': True, 'order': 40})
+    driver_type: str = Field(description="The interface module that speaks this device's protocol (modbus, dnp3, "
+                                         'ieee2030_5, bacnet, fake).',
+                             json_schema_extra={'group': 'Device', 'order': 10})
     # Which side of its protocol this remote is: the default ``client`` reaches a device (master, client); a server
     # role (``server``, or a protocol's own word such as ``outstation``) serves the configured points to a remote peer.
     # Each interface's configuration narrows the accepted values and validates the role-specific fields.
-    driver_role: str = 'client'
-    heart_beat_point: str | None = None  # TODO: This needs to become a set (multiple devices could have multiple points).
-    module: str | None = None
-    plugins: list[str] = []
+    driver_role: str = Field(default='client',
+                             description='Which side of the protocol this remote is: client reaches a device; a server '
+                                         'role serves the configured points to a remote peer.',
+                             json_schema_extra={'group': 'Device', 'order': 20})
+    # TODO: heart_beat_point needs to become a set (multiple devices could have multiple points).
+    heart_beat_point: str | None = Field(default=None,
+                                         description='A point the driver toggles on every poll so the device can tell '
+                                                     'the platform is alive.',
+                                         json_schema_extra={'group': 'Polling', 'advanced': False, 'order': 30})
+    module: str | None = Field(default=None,
+                               description='Import path of a custom interface module when the driver type is not an '
+                                           'installed interface.',
+                               json_schema_extra={'advanced': True, 'order': 50})
+    plugins: list[str] = Field(default=[], json_schema_extra={'advanced': True, 'order': 60})
 
     @field_validator('driver_role', mode='before')
     @classmethod
